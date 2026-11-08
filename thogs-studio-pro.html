@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Thogs Studio</title>
+<style>
+:root{--bg:#f3f1fb;--panel:#fff;--ink:#1b1830;--mute:#6d6988;--line:#e3dff4;--acc:#7c4dff;--acc2:#ff5fa2;--ck:#dcd9ea;--ck2:#f5f3fc;--hh:118px;--sh:0 1px 2px rgba(40,20,90,.06),0 10px 30px rgba(40,20,90,.09);box-sizing:border-box;padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#100e1b;--panel:#1b1830;--ink:#f1eeff;--mute:#9a95b8;--line:#322e4d;--ck:#2a2640;--ck2:#352f52;--sh:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35)}}
+:root[data-theme=dark]{--bg:#100e1b;--panel:#1b1830;--ink:#f1eeff;--mute:#9a95b8;--line:#322e4d;--ck:#2a2640;--ck2:#352f52;--sh:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35)}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;color:var(--ink);font:14px/1.4 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(900px 500px at 0 -10%,color-mix(in srgb,var(--acc) 15%,transparent),transparent),radial-gradient(800px 500px at 100% 0,color-mix(in srgb,var(--acc2) 12%,transparent),transparent),var(--bg) fixed}
+header{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 18px 8px;padding-top:calc(10px + env(safe-area-inset-top,0px));backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:color-mix(in srgb,var(--bg) 85%,transparent);border-bottom:1px solid var(--line)}
+.logo{font-size:26px;font-weight:800;letter-spacing:-1px;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent;margin-right:auto}
+.logo small{font-size:12px;font-weight:500;letter-spacing:0;margin-left:8px;-webkit-text-fill-color:var(--mute);color:var(--mute)}
+button,.btn{font:inherit;font-size:13px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:7px 12px;cursor:pointer;box-shadow:0 1px 2px rgba(40,20,90,.08);transition:.15s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+button:hover,.btn:hover{border-color:var(--acc);transform:translateY(-1px);box-shadow:var(--sh)}button:active{transform:none}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+button.on,button.pri,.btn.pri{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border-color:transparent;box-shadow:0 4px 14px color-mix(in srgb,var(--acc) 45%,transparent)}button.pri,.btn.pri{font-weight:600}
+button:disabled{opacity:.4;pointer-events:none}
+#tabs{flex-basis:100%;display:flex;gap:6px;overflow-x:auto;padding:4px 0 2px;scrollbar-width:none}#tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;padding:8px 15px;border-radius:12px;font-weight:600;font-size:13.5px}.tab i{font-style:normal;font-size:17px}
+main{display:grid;grid-template-columns:1fr 370px;gap:16px;padding:16px;max-width:1340px;margin:0 auto}
+.stage{position:sticky;top:calc(var(--hh) + 8px);z-index:5;align-self:start;background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--sh);overflow:hidden}
+.tb{display:flex;align-items:center;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}.sp{flex:1}
+.cvbox{display:flex;align-items:center;justify-content:center;padding:16px;min-height:380px;background:var(--bg)}
+canvas#cv{display:none;max-width:100%;max-height:calc(100vh - var(--hh) - 190px);border-radius:10px;touch-action:none;box-shadow:0 0 0 1px var(--line),0 14px 44px rgba(30,10,80,.2);background:conic-gradient(var(--ck) 25%,var(--ck2) 0 50%,var(--ck) 0 75%,var(--ck2) 0) 0 0/20px 20px}
+canvas[data-m=pick],canvas[data-m=draw]{cursor:crosshair}canvas[data-m=erase],canvas[data-m=restore]{cursor:none}canvas[data-m=move]{cursor:grab}canvas[data-m=mtext],canvas[data-m=msticker]{cursor:move}
+.drop{width:100%;max-width:540px;text-align:center;padding:44px 20px 26px;border:2px dashed var(--line);border-radius:18px;cursor:pointer;background:var(--panel);transition:.2s}.drop:hover,.drop.on{border-color:var(--acc);box-shadow:var(--sh)}
+.drop b{display:block;font-size:20px;margin:8px 0}.drop>span{color:var(--mute);font-size:13px}.big{font-size:46px}
+.start{margin-top:22px;padding-top:18px;border-top:1px solid var(--line);cursor:default;display:grid;gap:10px;justify-items:center}.start>span{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.sb{display:flex;justify-content:space-between;gap:10px;padding:8px 14px;border-top:1px solid var(--line);font-size:12px;color:var(--mute);flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--sh);padding:0 14px 4px;align-self:start;position:sticky;top:calc(var(--hh) + 8px);max-height:calc(100vh - var(--hh) - 24px);overflow:auto}
+.phead{position:sticky;top:0;z-index:2;display:flex;gap:11px;align-items:center;padding:13px 0;background:var(--panel);border-bottom:1px solid var(--line)}
+.phead .pi{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:21px;background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 22%,transparent),color-mix(in srgb,var(--acc2) 22%,transparent))}
+.phead b{display:block;font-size:15.5px}.phead span{font-size:12px;color:var(--mute)}
+details{border-bottom:1px solid var(--line)}details:last-child{border:0}
+summary{list-style:none;display:flex;align-items:center;gap:9px;padding:12px 0;font-weight:700;font-size:13.5px;cursor:pointer}summary::-webkit-details-marker{display:none}
+summary i{font-style:normal;width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:color-mix(in srgb,var(--acc) 13%,transparent)}
+summary::after{content:'›';margin-left:auto;font-size:18px;color:var(--mute);transition:.2s}details[open]>summary::after{transform:rotate(90deg)}
+.bd{display:grid;gap:9px;padding-bottom:14px}
+.row{display:flex;align-items:center;gap:8px;font-size:12.5px}.row>span{min-width:104px;color:var(--mute)}.row.sw>span{flex:1}
+output{min-width:30px;text-align:right;color:var(--mute);font-size:12px;font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chips button{padding:6px 10px;font-size:12.5px}.note{font-size:12px;color:var(--mute)}
+.lbl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin-top:4px}
+button.gp{color:#fff;border:0;text-shadow:0 1px 2px rgba(0,0,0,.45);font-weight:600}
+input[type=range]{flex:1;min-width:0;-webkit-appearance:none;appearance:none;height:5px;border-radius:9px;background:var(--line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid var(--acc);box-shadow:0 2px 6px rgba(40,20,90,.3);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:2px solid var(--acc)}
+input[type=checkbox]{-webkit-appearance:none;appearance:none;width:34px;height:20px;border-radius:99px;background:var(--line);position:relative;cursor:pointer;transition:.2s;flex:none;margin:0}
+input[type=checkbox]::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:.2s}
+input[type=checkbox]:checked{background:linear-gradient(135deg,var(--acc),var(--acc2))}input[type=checkbox]:checked::after{left:16px}
+input[type=color]{width:38px;height:28px;border:1px solid var(--line);border-radius:8px;padding:2px;background:var(--panel);cursor:pointer}
+input[type=text],select{flex:1;min-width:0;font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+#ring{position:fixed;pointer-events:none;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.4);transform:translate(-50%,-50%);display:none;z-index:15}
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:99px;box-shadow:var(--sh);opacity:0;transition:.25s;pointer-events:none;z-index:40;max-width:calc(100vw - 32px);text-align:center}#toast.on{opacity:1;transform:translate(-50%,0)}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(10,8,22,.7);backdrop-filter:blur(6px);padding:16px;z-index:30}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,.45);display:grid;grid-template-columns:1fr 290px;gap:16px;padding:16px;max-width:920px;width:100%;max-height:92vh;overflow:auto}
+.pv{display:grid;place-items:center;border-radius:12px;min-height:220px;background:conic-gradient(var(--ck) 25%,var(--ck2) 0 50%,var(--ck) 0 75%,var(--ck2) 0) 0 0/20px 20px}.pv img{max-width:100%;max-height:68vh;border-radius:6px}
+.side{display:grid;gap:12px;align-content:start}.side h3{margin:0;font-size:16px}
+/* AI assistant */
+#aiBtn{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;justify-content:center;padding:0;font-size:26px;z-index:25;border:0;background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 10px 30px color-mix(in srgb,var(--acc) 55%,transparent)}
+#aiBtn::after{content:'';position:absolute;top:4px;right:4px;width:12px;height:12px;border-radius:50%;background:#2fe39a;border:2px solid #fff}
+#ai{position:fixed;right:18px;bottom:calc(88px + env(safe-area-inset-bottom,0px));width:400px;height:min(620px,calc(100vh - 120px));display:none;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:0 30px 80px rgba(20,10,60,.35);z-index:26;overflow:hidden}
+#ai.on{display:flex}
+.aih{display:flex;align-items:center;gap:10px;padding:12px 14px;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff}
+.aih .av{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.2);font-size:20px}
+.aih b{display:block;font-size:15px}.aih small{opacity:.9;font-size:11.5px}
+.aih button{margin-left:auto;background:rgba(255,255,255,.2);color:#fff;border:0;box-shadow:none}
+.msgs{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--bg)}
+.m{max-width:90%;padding:9px 12px;border-radius:14px;font-size:13.5px;line-height:1.5}
+.m.b{background:var(--panel);border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:4px}
+.m.u{align-self:flex-end;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border-bottom-right-radius:4px;white-space:pre-wrap}
+.m .chips{margin-top:9px}.m .chips button{font-size:12px;padding:5px 10px}
+.sw{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:-1px;margin:0 3px;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.typing i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--mute);margin:0 2px;animation:bl 1s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bl{0%,80%,100%{opacity:.25;transform:none}40%{opacity:1;transform:translateY(-3px)}}
+.sugg{display:flex;gap:6px;overflow-x:auto;padding:8px 12px;border-top:1px solid var(--line);scrollbar-width:thin}.sugg button{white-space:nowrap;font-size:12px;padding:5px 11px;border-radius:99px;flex:none}
+#aif{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}#aif button{padding:7px 14px}
+@media(max-width:860px){main{grid-template-columns:1fr;padding:10px}.panel{position:static;max-height:none}.stage{top:0;position:relative}canvas#cv{max-height:46vh}.cvbox{min-height:220px;padding:8px}.logo small{display:none}.card{grid-template-columns:1fr}header{padding:8px 10px 6px}.hl{display:none}#ai{left:8px;right:8px;width:auto;bottom:calc(84px + env(safe-area-inset-bottom,0px))}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style></head><body>
+<header><div class="logo">Thogs<small data-i18n>Studio · cut out, draw, gradient, style</small></div>
+<button id="reset" title="Photo">📂 <span class="hl" data-i18n>Photo</span></button><button id="blankB" title="Blank">✏️ <span class="hl" data-i18n>Blank</span></button><button id="langB" title="Language / Limbă">🌐 RO</button><button id="theme" title="Light / dark">🌓</button><button id="save" class="pri" disabled title="Ctrl+S" data-i18n>⬇ Export</button>
+<nav id="tabs" aria-label="Sections"></nav></header>
+<main>
+<section class="stage" id="stage">
+<div class="tb"><div class="chips" id="modes"></div><div class="sp"></div><button id="bundo" title="Undo (Ctrl+Z)" disabled>↶</button><button id="bredo" title="Redo (Ctrl+Shift+Z)" disabled>↷</button><button id="bcmp" data-i18n>👁 Compare</button></div>
+<div class="cvbox" id="cvbox"><div class="drop" id="drop"><div class="big">🖼️</div><b data-i18n>Drop a photo, paste it, or click here</b><span data-i18n>JPG, PNG, WEBP · everything stays in your browser</span>
+<div class="start"><span data-i18n>or start with a blank canvas</span><div class="chips"><button data-r="1:1" data-i18n>⬛ Square</button><button data-r="4:5" data-i18n>▯ Portrait</button><button data-r="9:16" data-i18n>📱 Story</button><button data-r="16:9" data-i18n>🖥 Wide</button></div></div></div>
+<canvas id="cv" data-m="pick"></canvas></div>
+<div class="sb"><span id="st" data-i18n>No photo yet</span><span data-i18n>W wand · E erase · R restore · D draw · I eyedropper · V move · [ ] size · Ctrl+Z undo</span></div>
+</section>
+<aside class="panel" id="sections"><div class="phead" id="phead"></div></aside>
+</main>
+<input type="file" id="file" accept="image/*" hidden><input type="file" id="bgf" accept="image/*" hidden>
+<div id="ring"></div><div id="toast"></div>
+<div class="modal" id="modal"><div class="card"><div class="pv"><img id="out" alt="Result"></div>
+<div class="side"><h3 data-i18n>Export</h3><div class="chips" id="ef"></div><div class="chips" id="ek"></div><div class="chips" id="eb"></div>
+<div class="row" id="qrow" style="display:none"><span data-i18n>Quality</span><input type="range" id="qr" min="50" max="100" value="92"><output id="qo">92</output></div>
+<div class="note" id="info"></div>
+<div class="chips"><a class="btn pri" id="dl" download="thogs.png" data-i18n>⬇ Download</a><button id="copy" data-i18n>Copy</button><button id="share" data-i18n>Share</button><button id="close" data-i18n>Close</button></div>
+<div class="note" data-i18n>On phones you can also long-press the image to save it.</div></div></div></div>
+<button id="aiBtn" title="Thogs AI" aria-label="Thogs AI">🤖</button>
+<div id="ai" role="dialog" aria-label="Thogs AI">
+<div class="aih"><div class="av">🤖</div><div><b>Thogs AI</b><small data-i18n>Ask me, or tell me what to change in your image</small></div><button id="aiX" title="Close">✕</button></div>
+<div class="msgs" id="msgs"></div><div class="sugg" id="sugg"></div>
+<form id="aif"><input type="text" id="aiq" autocomplete="off"><button class="pri" type="submit">➤</button></form></div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],cv=$('#cv'),sc=document.createElement('canvas'),bc=document.createElement('canvas'),pc=document.createElement('canvas'),lc=document.createElement('canvas'),PM=164,
+mk=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e},rgbOf=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)),
+toHex=a=>'#'+a.map(v=>Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,'0')).join(''),hexA=(h,a)=>h+Math.round(a*255).toString(16).padStart(2,'0'),
+hsl2hex=(h,s,l)=>{s/=100;l/=100;const k=n=>(n+h/30)%12,a=s*Math.min(l,1-l),f=n=>255*(l-a*Math.max(-1,Math.min(k(n)-3,9-k(n),1)));return toHex([f(0),f(8),f(4)])},
+clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+/* ---------- language ---------- */
+let UIL='en';try{UIL=localStorage.getItem('thogsLang')||'en'}catch(e){}
+const RO={'Studio · cut out, draw, gradient, style':'Studio · decupează, desenează, gradient, stil','Photo':'Poză','Blank':'Pânză goală','⬇ Export':'⬇ Salvează','👁 Compare':'👁 Compară',
+'Drop a photo, paste it, or click here':'Trage o poză aici, lipește-o (Ctrl+V) sau dă click','JPG, PNG, WEBP · everything stays in your browser':'JPG, PNG, WEBP · totul rămâne în browserul tău','or start with a blank canvas':'sau începe cu o pânză goală',
+'⬛ Square':'⬛ Pătrat','▯ Portrait':'▯ Portret','📱 Story':'📱 Story','🖥 Wide':'🖥 Lat','No photo yet':'Nicio poză încă','W wand · E erase · R restore · D draw · I eyedropper · V move · [ ] size · Ctrl+Z undo':'W baghetă · E șterge · R readu · D desen · I pipetă · V mută · [ ] mărime · Ctrl+Z anulează',
+'Export':'Salvează imaginea','Quality':'Calitate','⬇ Download':'⬇ Descarcă','Copy':'Copiază','Share':'Trimite','Close':'Închide','On phones you can also long-press the image to save it.':'Pe telefon poți ține apăsat pe imagine ca s-o salvezi.',
+'Ask me, or tell me what to change in your image':'Întreabă-mă sau spune-mi ce să schimb în imagine',
+'🪄 Wand':'🪄 Baghetă','🧽 Erase':'🧽 Șterge','🖌 Restore':'🖌 Readu','✏️ Draw':'✏️ Desen','✥ Move':'✥ Mută','★ Sticker':'★ Sticker','1× size':'1× mărime','2× size':'2× mărime','3× size':'3× mărime','With background':'Cu fundal','Transparent':'Transparent',
+'Style presets':'Stiluri gata făcute','Draw & shapes':'Desen & forme','Remove background':'Scoate fundalul','Gradients':'Gradiente','Gradient overlay':'Filtru gradient (overlay)','Outline & shadow':'Contur & umbră','Filters & color':'Filtre & culoare','Subject texture':'Textură pe subiect','Background':'Fundal','Stickers':'Stickere','Format & position':'Format & poziție',
+'Reset style':'Resetează stilul','Brushes':'Pensule','Shapes · hold Shift for perfect ones':'Forme · ține Shift pentru forme perfecte','Light & color':'Lumină & culoare',
+'✒️ Pen':'✒️ Pix','🌈 Rainbow':'🌈 Curcubeu','🖋 Calligraphy':'🖋 Caligrafie','🧽 Eraser':'🧽 Gumă','╱ Line':'╱ Linie','➜ Arrow':'➜ Săgeată','▭ Rect':'▭ Dreptunghi','▢ Rounded':'▢ Rotunjit','◯ Ellipse':'◯ Cerc','△ Triangle':'△ Triunghi','★ Star':'★ Stea','♥ Heart':'♥ Inimă',
+'▤ Gradient fill':'▤ Umplere gradient','✺ Glow light':'✺ Lumină glow','💧 Eyedropper':'💧 Pipetă','Color':'Culoare','2nd color':'A 2-a culoare','Gradient paint':'Pictează cu gradient','Size':'Mărime','Opacity':'Opacitate','Shape fill':'Umplere formă','Outline':'Contur','Filled':'Plină','Fill + outline':'Plină + contur',
+'Symmetry':'Simetrie','Off':'Oprit','Mirror ↔':'Oglindă ↔','Mirror ↕':'Oglindă ↕','Quad':'4 părți','Draw behind subject':'Desen în spatele subiectului','↶ Undo last stroke':'↶ Anulează ultima linie','🗑 Clear drawing':'🗑 Șterge desenul',
+'Pick a tool, then draw on the canvas. Works on photos and on blank canvases.':'Alege o unealtă, apoi desenează pe pânză. Merge pe poze și pe pânze goale.',
+'✨ Auto-remove':'✨ Scoate automat','Tolerance':'Toleranță','Brush size':'Mărime pensulă','Brush hardness':'Duritate pensulă','Remove color everywhere':'Scoate culoarea peste tot','Smooth':'Netezește','Shrink':'Micșorează','Grow':'Mărește','Invert':'Inversează','↔ Flip':'↔ Oglindește','⟳ Rotate':'⟳ Rotește',
+'Wand picks a color, Erase and Restore paint the mask. Pick the tool above the photo.':'Bagheta scoate o zonă de culoare, Șterge și Readu pictează masca. Alegi unealta deasupra pozei.',
+'🎲 Random gradient':'🎲 Gradient aleator','⇄ Swap colors':'⇄ Inversează culorile','Linear':'Liniar','Color 1':'Culoare 1','Color 2':'Culoare 2','Use 3rd color':'Folosește a 3-a culoare','Color 3':'Culoare 3','Angle':'Unghi','Grain':'Granulație','Presets set the background to Gradient automatically.':'Preseturile pun automat fundalul pe Gradient.',
+'Overlay on':'Activează','Strength':'Intensitate','Blend':'Amestec','Tints the whole image like a color grade.':'Colorează toată imaginea, ca un filtru de film.',
+'Width':'Grosime','Softness / glow':'Moliciune / strălucire','Double outline':'Contur dublu','2nd width':'Grosime 2','Shadow':'Umbră','Offset X':'Deplasare X','Offset Y':'Deplasare Y',
+'B&W':'Alb-negru','Cool':'Rece','Warm':'Cald','Invert ':'Inversat','Faded':'Șters','Drama':'Dramatic','Brightness':'Luminozitate','Saturation':'Saturație','Temperature':'Temperatură','Vignette':'Vignetă','Duotone uses the gradient Color 1 and Color 2.':'Duotone folosește Culoare 1 și Culoare 2 din gradient.',
+'None':'Fără','Dots':'Buline','Stripes':'Dungi','Grid':'Grilă','Intensity':'Intensitate','Paper':'Hârtie','Checker':'Șah','Blurred photo':'Poză blurată','Your image':'Imaginea ta','Upload background':'Încarcă fundal','More gradient options are in Gradients.':'Mai multe opțiuni sunt la Gradiente.',
+'Fill':'Culoare','Gradient fill':'Culoare în gradient','Gradient 2nd':'A 2-a culoare','Stroke':'Contur','Stroke width':'Grosime contur','Rotation':'Rotație','Text shadow':'Umbră text','Behind subject':'În spatele subiectului','📌 Stamp text & add another':'📌 Fixează textul & scrie altul','Type something…':'Scrie ceva…',
+'Choose the Text tool and drag on the photo to place it. Stamp keeps it and lets you write a new one.':'Alege unealta Text și trage pe imagine ca să-l muți. „Fixează” îl păstrează și poți scrie altul.','Typewriter':'Mașină de scris',
+'Remove last':'Scoate ultimul','Clear all':'Șterge tot','Tap a sticker, then use the Sticker tool to drag it. Tap one on the photo to select it.':'Apasă un sticker, apoi îl muți cu unealta Sticker. Apasă pe unul din imagine ca să-l selectezi.',
+'Square':'Pătrat','Wide':'Lat','Subject zoom':'Zoom subiect','Center subject':'Centrează subiectul','Scroll over the photo to zoom. Use the Move tool to reposition.':'Dă scroll pe imagine pentru zoom. Cu unealta Mută îl repoziționezi.',
+'Open a photo or a blank canvas first':'Deschide mai întâi o poză sau o pânză goală','Photo loaded. Try Auto-remove.':'Poza e încărcată. Încearcă ✨ Scoate automat.','Blank canvas ready — pick a brush and draw!':'Pânza goală e gata — alege o pensulă și desenează!','Background removed. Refine it with Erase and Restore.':'Fundal scos. Repară marginile cu Șterge și Readu.',
+'Drag the sticker on the photo':'Trage stickerul pe imagine','Copied to clipboard':'Copiat','Text stamped — type a new one':'Text fixat — scrie altul','Type some text first':'Scrie mai întâi un text','Drawing cleared (Ctrl+Z brings it back)':'Desen șters (Ctrl+Z îl aduce înapoi)',
+'Please choose an image file':'Alege un fișier imagine','This image could not be read':'Imaginea nu a putut fi citită','Copy is not supported here. Use Download.':'Copierea nu merge aici. Folosește Descarcă.','Sharing is not available here. Use Download.':'Trimiterea nu merge aici. Folosește Descarcă.'};
+const tr=s=>UIL==='ro'&&RO[s]||s;
+const BASE={ol:true,olw:14,olcol:'#ffffff',olsoft:0,dbl:false,olw2:12,olcol2:'#7c4dff',sh:true,shcol:'#000000',shb:22,shx:0,shy:10,sha:60,flt:'none',bri:100,con:100,sat:100,warm:0,vig:0,tex:'none',bg:'none',c1:'#ffd86b',c2:'#ff8fb8',c3:'#7c4dff',use3:false,gtype:'linear',ang:135,gnoise:0,ov:false,otype:'linear',oc1:'#ff5fa2',oc2:'#00c6ff',oang:45,oop:40,oblend:'overlay'};
+const V={mode:'pick',tol:28,brush:30,hard:70,glob:false,txa:30,txt:'',font:'Impact,Haettenschweiler,sans-serif',tsz:14,tcol:'#ffffff',tcol2:'#ffd86b',tgrad:false,tstk:'#000000',tsw:8,tsh:true,trot:0,tbeh:false,tx:.5,ty:.15,ssz:14,fmt:'orig',zoom:90,
+ dtool:'pen',dcol:'#7c4dff',dcol2:'#ff5fa2',dgrad:false,dsz:12,dop:100,dshape:'stroke',dsym:'none',dbeh:false,...BASE};
+const PRE={Sticker:{},Neon:{olcol:'#00e5ff',olw:7,olsoft:10,dbl:true,olcol2:'#ff2fd1',olw2:12,shcol:'#00e5ff',shb:50,sha:90,shy:0,bg:'grad',c1:'#14002e',c2:'#001a3a',flt:'drama'},'Pop art':{olcol:'#111111',olw:10,dbl:true,olcol2:'#ffffff',olw2:8,shcol:'#111111',shx:12,shy:14,shb:0,sha:100,bg:'dots',c1:'#ffd23f',flt:'pop'},Clean:{ol:false,shb:45,sha:35,shy:26,bg:'solid',c1:'#f1eeff'},Retro:{olcol:'#fff6dc',olw:10,flt:'sepia',tex:'paper',txa:18,bg:'paper',c1:'#e8d5a8',vig:45,shcol:'#3b2a10',sha:45},
+ Dreamy:{olsoft:14,olw:10,olcol:'#ffffff',shcol:'#a18cd1',shb:60,sha:70,shy:0,bg:'grad',gtype:'aurora',use3:true,c1:'#1d1442',c2:'#ff8fd8',c3:'#7ad7ff',gnoise:12,ov:true,oblend:'soft-light',oc1:'#e0c3fc',oc2:'#8ec5fc',oop:55},
+ Cyber:{olcol:'#ff00cc',olw:6,olsoft:12,dbl:true,olcol2:'#00f0ff',olw2:8,shcol:'#ff00cc',shb:40,sha:80,shy:0,bg:'grad',gtype:'conic',use3:true,c1:'#0f0c29',c2:'#ff00cc',c3:'#333399',flt:'cyber',vig:40}};
+const GP={Sunset:['#ff7e5f','#feb47b','#ff5f6d'],Ocean:['#2193b0','#6dd5ed','#0f2b5b'],Aurora:['#0b0f2b','#00c9a7','#845ec2'],Candy:['#ff9a9e','#fad0c4','#fbc2eb'],Cyber:['#0f0c29','#ff00cc','#333399'],Mint:['#d4fc79','#96e6a1','#43e97b'],Fire:['#f12711','#f5af19','#ff512f'],Peach:['#ffecd2','#fcb69f','#ff9a8b'],Midnight:['#232526','#414345','#000000'],Lavender:['#e0c3fc','#8ec5fc','#a18cd1'],Lemon:['#fdfc47','#24fe41','#f7ff00'],Royal:['#141e30','#243b55','#7c4dff']};
+let W=0,H=0,rgb,al,orig,US=[],RS=[],ver=0,P=8,G={cw:1,ch:1,s:1},down=false,raf=0,lx=0,ly=0,lp=null,cmp=false,bgImg=null,off=[0,0],stk=[],cache={},curBlob=null,url='',hit=false,tm=0,drw=[],dver=0,curS=null,isBlank=false,tab='cut';
+const exp={f:'png',k:1,q:92,bg:true},CH=[],HOOK={ssz(){const o=stk[stk.length-1];if(o)o.z=V.ssz}};
+const toast=m=>{const t=$('#toast');t.textContent=tr(m);t.classList.add('on');clearTimeout(tm);tm=setTimeout(()=>t.classList.remove('on'),2400)};
+const need=()=>{if(!rgb)toast('Open a photo or a blank canvas first');return!!rgb};
+const FREE=new Set(['pen','marker','neon','rainbow','spray','callig','eraser']),NOSYM=new Set(['grad','glow','text']);
+/* ---------- UI ---------- */
+function chips(box,o,k,opts,cb){opts.forEach(([v,t])=>{const b=mk('button','',tr(t));b.onclick=()=>{o[k]=v;chSync();cb&&cb(v)};box.appendChild(b);CH.push([b,o,k,v])})}
+const chSync=()=>CH.forEach(([b,o,k,v])=>b.classList.toggle('on',String(o[k])===String(v)));
+function sync(){$$('[data-k]').forEach(e=>{const v=V[e.dataset.k];if(e.type==='checkbox')e.checked=v;else e.value=v;const o=e.nextElementSibling;if(o&&o.tagName==='OUTPUT')o.textContent=v});chSync()}
+const FONTS=[['Impact,Haettenschweiler,sans-serif','Impact'],['Arial Black,Gadget,sans-serif','Arial Black'],['Georgia,serif','Elegant'],['Brush Script MT,cursive','Script'],['Courier New,monospace','Typewriter'],['Trebuchet MS,sans-serif','Trebuchet'],['Comic Sans MS,Comic Neue,cursive','Comic'],['Segoe UI,system-ui,sans-serif','Modern']];
+const TEX=[['none','None'],['dots','Dots'],['stripes','Stripes'],['grid','Grid'],['paper','Grain']],
+BGS=[['none','Transparent'],['solid','Color'],['grad','Gradient'],['dots','Dots'],['stripes','Stripes'],['grid','Grid'],['paper','Paper'],['checker','Checker'],['blur','Blurred photo'],['image','Your image']],
+TOOLS=[['pen','✒️ Pen'],['marker','🖍 Marker'],['neon','💡 Neon'],['rainbow','🌈 Rainbow'],['spray','💨 Spray'],['callig','🖋 Calligraphy'],['eraser','🧽 Eraser']],
+SHAPES=[['line','╱ Line'],['arrow','➜ Arrow'],['rect','▭ Rect'],['rrect','▢ Rounded'],['ellipse','◯ Ellipse'],['tri','△ Triangle'],['star','★ Star'],['heart','♥ Heart']],
+LIGHT=[['grad','▤ Gradient fill'],['glow','✺ Glow light'],['pick','💧 Eyedropper']],
+SYM=[['none','Off'],['x','Mirror ↔'],['y','Mirror ↕'],['xy','Quad'],['m6','Mandala 6'],['k8','Kaleido 8']],
+BLENDS=[['overlay','Overlay'],['soft-light','Soft light'],['color','Color'],['screen','Screen'],['multiply','Multiply'],['hue','Hue'],['lighten','Lighten'],['color-dodge','Dodge']],
+EMO='⭐ ❤️ 🔥 ✨ 😎 🌈 👑 💥 🎉 🦄 🌸 ⚡ 💎 🍀 👀 💯 🥳 😂 😍 🤩 🙌 👍 🎵 🎮 🚀 🌙 ☀️ ☁️ 🌊 🍕 🍩 🎁 💖 💜 🖤 🦋 🐱 🐶 🌟 🎯'.split(' ');
+const SEC=[
+['✨','Style presets',[['b',Object.keys(PRE).map(k=>['p:'+k,k])],['b',[['rst','Reset style']]]],0,'pre'],
+['✏️','Draw & shapes',[['l','Brushes'],['ch','dtool',TOOLS],['l','Shapes · hold Shift for perfect ones'],['ch','dtool',SHAPES],['l','Light & color'],['ch','dtool',LIGHT],
+ ['k','dcol','Color'],['k','dcol2','2nd color'],['c','dgrad','Gradient paint'],['r','dsz','Size',1,120],['r','dop','Opacity',5,100],
+ ['l','Shape fill'],['ch','dshape',[['stroke','Outline'],['fill','Filled'],['both','Fill + outline']]],['l','Symmetry'],['ch','dsym',SYM],['c','dbeh','Draw behind subject'],
+ ['b',[['dundo','↶ Undo last stroke'],['dclr','🗑 Clear drawing']]],['n','Pick a tool, then draw on the canvas. Works on photos and on blank canvases.']],1,'draw'],
+['✂️','Remove background',[['b',[['auto','✨ Auto-remove','pri']]],['r','tol','Tolerance',3,80],['r','brush','Brush size',4,120],['r','hard','Brush hardness',0,100],['c','glob','Remove color everywhere'],
+ ['b',[['smooth','Smooth'],['erode','Shrink'],['grow','Grow'],['inv','Invert'],['flip','↔ Flip'],['rot','⟳ Rotate']]],['n','Wand picks a color, Erase and Restore paint the mask. Pick the tool above the photo.']],1,'cut'],
+['🌈','Gradients',[['gp'],['b',[['rgrad','🎲 Random gradient'],['swap','⇄ Swap colors']]],['ch','gtype',[['linear','Linear'],['radial','Radial'],['conic','Conic'],['aurora','Aurora mesh']]],
+ ['k','c1','Color 1'],['k','c2','Color 2'],['c','use3','Use 3rd color'],['k','c3','Color 3'],['r','ang','Angle',0,360],['r','gnoise','Grain',0,60],['n','Presets set the background to Gradient automatically.']],0,'grad'],
+['🎨','Gradient overlay',[['c','ov','Overlay on'],['ch','otype',[['linear','Linear'],['radial','Radial']]],['k','oc1','Color 1'],['k','oc2','Color 2'],['r','oang','Angle',0,360],['r','oop','Strength',0,100],['s','oblend','Blend',BLENDS],['n','Tints the whole image like a color grade.']],0,'ovl'],
+['🖍','Outline & shadow',[['c','ol','Outline'],['r','olw','Width',2,50],['k','olcol','Color'],['r','olsoft','Softness / glow',0,30],['c','dbl','Double outline'],['r','olw2','2nd width',2,40],['k','olcol2','2nd color'],
+ ['c','sh','Shadow'],['k','shcol','Color'],['r','sha','Opacity',0,100],['r','shb','Blur',0,80],['r','shx','Offset X',-60,60],['r','shy','Offset Y',-60,60]],0,'ol'],
+['🎛','Filters & color',[['ch','flt',[['none','Normal'],['bw','B&W'],['noir','Noir'],['sepia','Sepia'],['cool','Cool'],['warm','Warm'],['pop','Pop'],['invert','Invert '],['fade','Faded'],['drama','Drama'],['vintage','Vintage'],['cyber','Cyber'],['duo','Duotone']]],
+ ['r','bri','Brightness',50,150],['r','con','Contrast',50,150],['r','sat','Saturation',0,200],['r','warm','Temperature',-100,100],['r','vig','Vignette',0,100],['n','Duotone uses the gradient Color 1 and Color 2.']],0,'flt'],
+['🧵','Subject texture',[['ch','tex',TEX],['r','txa','Intensity',5,80]],0,'tex'],
+['🌆','Background',[['ch','bg',BGS],['k','c1','Color 1'],['k','c2','Color 2'],['b',[['bgimg','Upload background']]],['n','More gradient options are in Gradients.']],0,'bg'],
+['🔤','Text',[['t','txt','Text'],['s','font','Font',FONTS],['r','tsz','Size',4,40],['k','tcol','Fill'],['c','tgrad','Gradient fill'],['k','tcol2','Gradient 2nd'],['k','tstk','Stroke'],['r','tsw','Stroke width',0,25],['r','trot','Rotation',-180,180],['c','tsh','Text shadow'],['c','tbeh','Behind subject'],
+ ['b',[['stamp','📌 Stamp text & add another']]],['n','Choose the Text tool and drag on the photo to place it. Stamp keeps it and lets you write a new one.']],0,'txt'],
+['🌟','Stickers',[['b',EMO.map(e=>['s:'+e,e])],['r','ssz','Size',4,60],['b',[['sundo','Remove last'],['sclr','Clear all']]],['n','Tap a sticker, then use the Sticker tool to drag it. Tap one on the photo to select it.']],0,'stk'],
+['📐','Format & position',[['ch','fmt',[['orig','Original'],['1:1','Square'],['4:5','4:5'],['3:4','3:4'],['9:16','Story'],['16:9','Wide']]],['r','zoom','Subject zoom',30,160],['b',[['ctr','Center subject']]],['n','Scroll over the photo to zoom. Use the Move tool to reposition.']],0,'fmt']];
+const TABS=[
+ ['cut','✂️','Cut out','Decupare',['cut'],'pick','Remove the background of your photo and clean the edges.','Scoate fundalul pozei și curăță marginile.'],
+ ['draw','✏️','Draw','Desen',['draw'],'draw','Brushes, shapes, symmetry and light tools.','Pensule, forme, simetrie și unelte de lumină.'],
+ ['color','🌈','Colors','Culori',['grad','bg','ovl'],null,'Gradients, background and color overlay.','Gradiente, fundal și filtru de culoare.'],
+ ['fx','✨','Effects','Efecte',['pre','ol','flt','tex'],null,'Ready-made styles, outline, shadow and filters.','Stiluri gata făcute, contur, umbră și filtre.'],
+ ['txt','🔤','Text','Text',['txt'],'mtext','Write titles and quotes, then drag them on the image.','Scrie titluri și citate, apoi trage-le pe imagine.'],
+ ['stk','🌟','Stickers','Stickere',['stk'],'msticker','Emoji stickers you can move and resize.','Stickere emoji pe care le muți și le mărești.'],
+ ['fmt','📐','Size','Mărime',['fmt'],'move','Format for Instagram, TikTok, YouTube and subject position.','Format pentru Instagram, TikTok, YouTube și poziția subiectului.'],
+ ['all','☰','All','Toate',null,null,'Every tool in one list.','Toate uneltele într-o singură listă.']];
+function ctl(it){const[t,k,l,a,b]=it,r=mk('div','row');
+ if(t==='b'){r.className='chips';k.forEach(([id,lb,c])=>{const e=mk('button',c||'',tr(lb));e.onclick=()=>{const i=id.indexOf(':');i<0?ACT[id]():id[0]==='p'?preset(id.slice(2)):addS(id.slice(2))};r.appendChild(e)});return r}
+ if(t==='gp'){r.className='chips';Object.entries(GP).forEach(([n,cs])=>{const e=mk('button','gp',n);e.style.background=`linear-gradient(135deg,${cs.join(',')})`;e.onclick=()=>applyGP(n);r.appendChild(e)});return r}
+ if(t==='n'){r.className='note';r.textContent=tr(k);return r}
+ if(t==='l'){r.className='lbl';r.textContent=tr(k);return r}
+ if(t==='ch'){r.className='chips';chips(r,V,k,l,v=>{if(k==='fmt')off=[0,0];if(k==='bg'&&v==='image'&&!bgImg)$('#bgf').click();if(k==='dtool')setTool(v);R()});return r}
+ r.appendChild(mk('span','',tr(l)));let e;
+ if(t==='s')e=mk('select','',a.map(([v,n])=>`<option value="${v}">${tr(n)}</option>`).join(''));
+ else{e=mk('input');e.type={r:'range',k:'color',c:'checkbox',t:'text'}[t];if(t==='r'){e.min=a;e.max=b}if(t==='t')e.placeholder=tr('Type something…')}
+ e.dataset.k=k;e.oninput=()=>{V[k]=e.type==='checkbox'?e.checked:e.type==='range'?+e.value:e.value;const o=e.nextElementSibling;if(o&&o.tagName==='OUTPUT')o.textContent=V[k];
+  $$(`[data-k="${k}"]`).forEach(x=>{if(x!==e){if(x.type==='checkbox')x.checked=V[k];else x.value=V[k]}});HOOK[k]&&HOOK[k]();R()};
+ r.appendChild(e);if(t==='r')r.appendChild(mk('output'));if(t==='c')r.className='row sw';return r}
+const setM=()=>{cv.dataset.m=V.mode;$('#ring').style.display='none'};
+function setTool(t){V.dtool=t;V.mode='draw';chSync();setM()}
+function setTab(id,noMode){tab=id;const T=TABS.find(t=>t[0]===id);$$('#tabs .tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===id));
+ $$('#sections details').forEach(d=>{const inn=!T[4]||T[4].includes(d.dataset.s);d.style.display=inn?'':'none';if(T[4]&&inn)d.open=true});
+ const ro=UIL==='ro';$('#phead').innerHTML=`<div class="pi">${T[1]}</div><div><b>${ro?T[3]:T[2]}</b><span>${ro?T[7]:T[6]}</span></div>`;
+ if(!noMode&&T[5]&&rgb){V.mode=T[5];chSync();setM()}$('#sections').scrollTop=0}
+function goSec(id){const cur=TABS.find(t=>t[0]===tab);if(cur[4]&&!cur[4].includes(id)){const T=TABS.find(t=>t[4]&&t[4].includes(id));if(T)setTab(T[0],true)}
+ const d=$(`#sections details[data-s="${id}"]`);if(!d)return;d.open=true;d.scrollIntoView({behavior:'smooth',block:'nearest'});d.animate([{background:'color-mix(in srgb,var(--acc) 18%,transparent)'},{background:'transparent'}],{duration:1400})}
+const hh=()=>document.documentElement.style.setProperty('--hh',$('header').offsetHeight+'px');addEventListener('resize',hh);
+function buildUI(){CH.length=0;['#modes','#ef','#ek','#eb','#tabs'].forEach(s=>$(s).innerHTML='');$$('#sections details').forEach(d=>d.remove());
+ SEC.forEach(([ic,t,items,op,id])=>{const d=mk('details','',`<summary><i>${ic}</i>${tr(t)}</summary>`),bx=mk('div','bd');d.dataset.s=id;if(op)d.open=true;items.forEach(i=>bx.appendChild(ctl(i)));d.appendChild(bx);$('#sections').appendChild(d)});
+ chips($('#modes'),V,'mode',[['pick','🪄 Wand'],['erase','🧽 Erase'],['restore','🖌 Restore'],['draw','✏️ Draw'],['move','✥ Move'],['mtext','T Text'],['msticker','★ Sticker']],setM);
+ chips($('#ef'),exp,'f',[['png','PNG'],['jpeg','JPG'],['webp','WEBP']],()=>showOut());chips($('#ek'),exp,'k',[[1,'1× size'],[2,'2× size'],[3,'3× size']],()=>showOut());chips($('#eb'),exp,'bg',[[true,'With background'],[false,'Transparent']],()=>showOut());
+ TABS.forEach(t=>{const b=mk('button','tab',`<i>${t[1]}</i>${UIL==='ro'?t[3]:t[2]}`);b.dataset.tab=t[0];b.onclick=()=>setTab(t[0]);$('#tabs').appendChild(b)});
+ $$('[data-i18n]').forEach(e=>{if(e.dataset.en==null)e.dataset.en=e.innerHTML;e.innerHTML=tr(e.dataset.en)});
+ $('#langB').textContent='🌐 '+UIL.toUpperCase();document.documentElement.lang=UIL;sync();setTab(tab,true);hh();R()}
+$('#langB').onclick=()=>{UIL=UIL==='ro'?'en':'ro';try{localStorage.setItem('thogsLang',UIL)}catch(e){}buildUI();lang=UIL;if(aiStarted)sugg();toast(UIL==='ro'?'Limba: Română':'Language: English')};
+function preset(n){Object.assign(V,BASE,PRE[n]);sync();R();toast(UIL==='ro'?`Stilul ${n} aplicat`:`${n} style applied`)}
+function applyGP(n){const[a,b,c]=GP[n];Object.assign(V,{c1:a,c2:b,c3:c,use3:true,bg:'grad'});sync();R();toast(UIL==='ro'?`Gradient ${n}`:`${n} gradient`)}
+/* ---------- history ---------- */
+const snap=()=>({al:al.slice(),rgb,orig,W,H,drw:drw.slice()}),rest=s=>{({al,rgb,orig,W,H,drw}=s);dver++;touch()};
+function push(){US.push(snap());if(US.length>30)US.shift();RS=[]}
+function undo(){if(!US.length)return;RS.push(snap());rest(US.pop())}
+function redo(){if(!RS.length)return;US.push(snap());rest(RS.pop())}
+const touch=()=>{ver++;R()};
+/* ---------- image tools ---------- */
+function fill(seeds,r,g,b,glob){const lim=V.tol*4.4,N=W*H,dist=i=>Math.hypot(rgb[i*4]-r,rgb[i*4+1]-g,rgb[i*4+2]-b);
+ if(glob){for(let i=0;i<N;i++)if(dist(i)<=lim)al[i]=0;return}
+ const vis=new Uint8Array(N),q=[],nb=j=>{if(!vis[j]&&dist(j)<=lim){vis[j]=1;q.push(j)}};seeds.forEach(nb);
+ while(q.length){const i=q.pop();al[i]=0;const x=i%W,y=(i/W)|0;if(x>0)nb(i-1);if(x<W-1)nb(i+1);if(y>0)nb(i-W);if(y<H-1)nb(i+W)}}
+function blurA(){const t=al.slice();for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){const i=y*W+x;al[i]=(t[i-W-1]+t[i-W]+t[i-W+1]+t[i-1]+t[i]+t[i+1]+t[i+W-1]+t[i+W]+t[i+W+1])/9}}
+function xf(map,nw,nh){const n=new Uint8ClampedArray(rgb.length),a=new Uint8ClampedArray(al.length),o=a.slice();for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x,j=map(x,y);for(let k=0;k<4;k++)n[j*4+k]=rgb[i*4+k];a[j]=al[i];o[j]=orig[i]}rgb=n;al=a;orig=o;W=nw;H=nh;touch()}
+const nbr=(f)=>{push();const o=al.slice();for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){const i=y*W+x;f(i,o)}touch()};
+const ACT={
+ auto(){if(!need())return;push();const b=[];for(let x=0;x<W;x++)b.push(x,(H-1)*W+x);for(let y=0;y<H;y++)b.push(y*W,y*W+W-1);const med=c=>{const a=b.map(i=>rgb[i*4+c]).sort((p,q)=>p-q);return a[a.length>>1]};fill(b,med(0),med(1),med(2),false);blurA();touch();toast('Background removed. Refine it with Erase and Restore.')},
+ smooth(){if(need()){push();blurA();touch()}},
+ erode(){if(need())nbr((i,o)=>{if(o[i]&&(o[i-1]<128||o[i+1]<128||o[i-W]<128||o[i+W]<128))al[i]=0})},
+ grow(){if(need())nbr((i,o)=>{if(!o[i]&&(o[i-1]>127||o[i+1]>127||o[i-W]>127||o[i+W]>127))al[i]=orig[i]})},
+ inv(){if(!need())return;push();for(let i=0;i<al.length;i++)al[i]=al[i]>127?0:orig[i];touch()},
+ flip(){if(!need())return;push();const w=W;xf((x,y)=>y*w+w-1-x,W,H)},
+ rot(){if(!need())return;push();const h=H;xf((x,y)=>x*h+(h-1-y),H,W)},
+ ctr(){off=[0,0];R()},rst(){preset('Sticker')},bgimg(){$('#bgf').click()},
+ sundo(){stk.pop();R()},sclr(){stk=[];R()},
+ dundo(){if(!drw.length)return;push();drw.pop();dver++;R()},
+ dclr(){if(!drw.length)return;push();drw=[];dver++;R();toast('Drawing cleared (Ctrl+Z brings it back)')},
+ rgrad(){const h=Math.random()*360;Object.assign(V,{c1:hsl2hex(h,85,58),c2:hsl2hex((h+50+Math.random()*110)%360,88,62),c3:hsl2hex((h+190)%360,80,50),use3:Math.random()<.6,ang:Math.round(Math.random()*360),bg:'grad'});sync();R()},
+ swap(){[V.c1,V.c2]=[V.c2,V.c1];sync();R()},
+ stamp(){if(!need())return;if(!V.txt){toast('Type some text first');return}push();drw.push({t:'text',o:{txt:V.txt,font:V.font,tsz:V.tsz,tcol:V.tcol,tcol2:V.tcol2,tgrad:V.tgrad,tstk:V.tstk,tsw:V.tsw,trot:V.trot,tsh:V.tsh,tx:V.tx,ty:V.ty}});dver++;V.txt='';V.ty=Math.min(.9,V.ty+.15);sync();R();toast('Text stamped — type a new one')}};
+function addS(e){stk.push({e,x:.5,y:.5,z:V.ssz});V.mode='msticker';chSync();setM();R();toast('Drag the sticker on the photo')}
+/* ---------- loading ---------- */
+function shown(){$('#drop').style.display='none';cv.style.display='block';$('#save').disabled=false}
+function load(f){if(!f||!f.type.startsWith('image/')){toast('Please choose an image file');return}const u=URL.createObjectURL(f),im=new Image();im.onerror=()=>toast('This image could not be read');
+ im.onload=()=>{const k=Math.min(1,1280/Math.max(im.width,im.height));W=Math.round(im.width*k);H=Math.round(im.height*k);const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.drawImage(im,0,0,W,H);rgb=x.getImageData(0,0,W,H).data;al=new Uint8ClampedArray(W*H);for(let i=0;i<W*H;i++)al[i]=rgb[i*4+3];orig=al.slice();US=[];RS=[];off=[0,0];cache={};drw=[];dver++;stk=[];isBlank=false;URL.revokeObjectURL(u);
+  V.mode='pick';shown();setTab('cut');chSync();setM();touch();toast('Photo loaded. Try Auto-remove.')};im.src=u}
+function blank(r){const[a,b]=r.split(':').map(Number),L=960;if(a>=b){W=L;H=Math.round(L*b/a)}else{H=L;W=Math.round(L*a/b)}
+ rgb=new Uint8ClampedArray(W*H*4).fill(255);al=new Uint8ClampedArray(W*H);orig=al.slice();US=[];RS=[];drw=[];dver++;stk=[];off=[0,0];cache={};V.fmt=r;isBlank=true;
+ if(V.bg==='none'||V.bg==='blur'||(V.bg==='image'&&!bgImg)){V.bg='grad'}shown();setTab('draw',true);V.mode='draw';sync();setM();touch();toast('Blank canvas ready — pick a brush and draw!')}
+$('#drop').onclick=e=>{if(e.target.closest('.start'))return;$('#file').click()};$('#reset').onclick=()=>$('#file').click();
+$$('.start [data-r]').forEach(b=>b.onclick=()=>blank(b.dataset.r));
+$('#blankB').onclick=()=>{if(rgb&&(drw.length||US.length)&&!confirm(UIL==='ro'?'Începi o pânză goală nouă? Lucrul curent va fi înlocuit.':'Start a new blank canvas? Your current work will be replaced.'))return;blank(V.fmt==='orig'?'1:1':V.fmt)};
+$('#file').onchange=e=>{load(e.target.files[0]);e.target.value=''};
+$('#bgf').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{bgImg=im;V.bg='image';chSync();R()};im.src=u};
+const st=$('#stage');st.ondragover=e=>{e.preventDefault();$('#drop').classList.add('on')};st.ondragleave=()=>$('#drop').classList.remove('on');st.ondrop=e=>{e.preventDefault();$('#drop').classList.remove('on');load(e.dataTransfer.files[0])};
+addEventListener('paste',e=>{const f=[...(e.clipboardData?.files||[])].find(f=>f.type.startsWith('image/'));if(f)load(f)});
+$('#bundo').onclick=undo;$('#bredo').onclick=redo;
+$('#bcmp').onpointerdown=()=>{if(rgb){cmp=true;draw()}};$('#bcmp').onpointerup=$('#bcmp').onpointerleave=()=>{if(cmp){cmp=false;draw()}};
+$('#theme').onclick=()=>{const d=document.documentElement,dk=(d.dataset.theme||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))==='dark';d.dataset.theme=dk?'light':'dark'};
+/* ---------- pointer ---------- */
+function raw(e){const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height]}
+function pos(e){const[cx,cy]=raw(e);return[Math.round((cx-G.ox)/G.s-P),Math.round((cy-G.oy)/G.s-P)]}
+function stamp(x,y){const R0=V.brush,h=V.hard/100,er=V.mode==='erase';for(let j=-R0;j<=R0;j++)for(let i=-R0;i<=R0;i++){const d=Math.hypot(i,j)/R0;if(d>1)continue;const px=x+i,py=y+j;if(px<0||py<0||px>=W||py>=H)continue;const w=d<=h?1:(1-d)/(1-h),k=py*W+px;al[k]=er?al[k]*(1-w):Math.max(al[k],orig[k]*w)}}
+function seg(x,y){const[a,b]=lp,dx=x-a,dy=y-b,n=Math.max(1,Math.ceil(Math.hypot(dx,dy)/Math.max(1,V.brush/4)));for(let i=1;i<=n;i++)stamp(Math.round(a+dx*i/n),Math.round(b+dy*i/n));lp=[x,y]}
+function ring(e){const r=$('#ring'),m=V.mode;if(!rgb){r.style.display='none';return}const k=cv.getBoundingClientRect().width/cv.width;let d;
+ if(m==='erase'||m==='restore')d=2*V.brush*G.s*k;else if(m==='draw'&&FREE.has(V.dtool))d=Math.max(4,V.dsz*G.cw/1000*(V.dtool==='spray'?4:V.dtool==='marker'?1.8:1)*k);else{r.style.display='none';return}
+ r.style.cssText=`display:block;width:${d}px;height:${d}px;left:${e.clientX}px;top:${e.clientY}px`}
+function spray(s,cx,cy){const r=s.w*G.cw/1000*2;for(let i=0;i<16;i++){const a=Math.random()*6.283,d=r*Math.sqrt(Math.random());s.dots.push([(cx+Math.cos(a)*d)/G.cw,(cy+Math.sin(a)*d)/G.ch])}}
+function drawMove(cx,cy,shift){const s=curS,nx=cx/G.cw,ny=cy/G.ch;
+ if(FREE.has(s.t)){const l=s.p[s.p.length-1];if(Math.hypot((nx-l[0])*G.cw,(ny-l[1])*G.ch)>1.5)s.p.push([nx,ny]);if(s.dots)spray(s,cx,cy);return}
+ let ex=cx,ey=cy;if(shift){const ax=s.p[0][0]*G.cw,ay=s.p[0][1]*G.ch,dx=cx-ax,dy=cy-ay;
+  if(s.t==='line'||s.t==='arrow'||s.t==='grad'){const a=Math.round(Math.atan2(dy,dx)/(Math.PI/4))*Math.PI/4,L=Math.hypot(dx,dy);ex=ax+Math.cos(a)*L;ey=ay+Math.sin(a)*L}
+  else{const d=Math.max(Math.abs(dx),Math.abs(dy));ex=ax+(dx<0?-d:d);ey=ay+(dy<0?-d:d)}}
+ s.p[1]=[ex/G.cw,ey/G.ch]}
+function endS(){const s=curS;curS=null;if(!FREE.has(s.t)){const[a,b]=s.p;if(Math.hypot((a[0]-b[0])*G.cw,(a[1]-b[1])*G.ch)<3){drw.pop();US.pop()}}dver++;R()}
+cv.onpointerdown=e=>{if(!rgb)return;e.preventDefault();const m=V.mode,[x,y]=pos(e),[cx,cy]=raw(e);lx=cx;ly=cy;
+ if(m==='draw'){if(V.dtool==='pick'){const d=cv.getContext('2d').getImageData(cx|0,cy|0,1,1).data;V.dcol=toHex([d[0],d[1],d[2]]);sync();toast((UIL==='ro'?'Culoare luată: ':'Picked ')+V.dcol);return}
+  push();curS={t:V.dtool,c:V.dcol,c2:V.dcol2,g:V.dgrad,w:V.dsz,op:V.dop/100,sm:V.dshape,sym:V.dsym,h:Math.random()*360,p:[[cx/G.cw,cy/G.ch]],dots:V.dtool==='spray'?[]:null};
+  if(!FREE.has(curS.t))curS.p.push([cx/G.cw,cy/G.ch]);else if(curS.dots)spray(curS,cx,cy);drw.push(curS);down=true;cv.setPointerCapture(e.pointerId);R();return}
+ if(m==='pick'){if(x<0||y<0||x>=W||y>=H)return;const i=y*W+x;push();fill([i],rgb[i*4],rgb[i*4+1],rgb[i*4+2],V.glob);touch();return}
+ hit=true;if(m==='msticker'){let bi=-1,bd=1e9;stk.forEach((o,i)=>{const d=Math.hypot(o.x*G.cw-cx,o.y*G.ch-cy);if(d<bd){bd=d;bi=i}});if(bi<0||bd>G.cw*stk[bi].z/100){hit=false;return}stk.push(stk.splice(bi,1)[0]);V.ssz=stk[stk.length-1].z;sync()}
+ down=true;cv.setPointerCapture(e.pointerId);lp=[x,y];if(m==='erase'||m==='restore'){push();stamp(x,y)}else if(m==='mtext')moveT(cx,cy);else if(m==='msticker')moveS(cx,cy);touch()};
+cv.onpointermove=e=>{ring(e);if(!down)return;const m=V.mode,[cx,cy]=raw(e);
+ if(m==='draw'){if(curS){drawMove(cx,cy,e.shiftKey);R()}return}
+ if(m==='move'){off[0]+=(cx-lx)/G.cw;off[1]+=(cy-ly)/G.ch;lx=cx;ly=cy;R()}else if(m==='mtext'){moveT(cx,cy);R()}else if(m==='msticker'){moveS(cx,cy);R()}else{const[x,y]=pos(e);seg(x,y);touch()}};
+cv.onpointerup=cv.onpointercancel=()=>{if(down){down=false;if(curS)endS();else if(V.mode==='erase'||V.mode==='restore')touch()}};cv.onpointerleave=()=>$('#ring').style.display='none';
+function moveT(cx,cy){V.tx=cx/G.cw;V.ty=cy/G.ch}function moveS(cx,cy){const o=stk[stk.length-1];if(o){o.x=cx/G.cw;o.y=cy/G.ch}}
+cv.addEventListener('wheel',e=>{if(!rgb)return;e.preventDefault();V.zoom=Math.max(30,Math.min(160,V.zoom-Math.sign(e.deltaY)*4));sync();R()},{passive:false});
+addEventListener('keydown',e=>{const t=e.target;if(t.tagName==='SELECT'||(t.tagName==='INPUT'&&t.type==='text'))return;const m=e.ctrlKey||e.metaKey,k=e.key.toLowerCase();
+ if(k==='escape'){$('#modal').style.display='none';$('#ai').classList.remove('on')}
+ else if(m&&k==='z'){e.preventDefault();e.shiftKey?redo():undo()}else if(m&&k==='y'){e.preventDefault();redo()}else if(m&&k==='s'){e.preventDefault();openExp()}
+ else if(!m&&!e.altKey){const M={w:'pick',e:'erase',r:'restore',d:'draw',v:'move',t:'mtext',s:'msticker'}[k];if(M){V.mode=M;chSync();setM()}else if(k==='i')setTool('pick');
+  else if(k==='['||k===']'){const s=k===']'?1:-1;if(V.mode==='draw')V.dsz=Math.max(1,Math.min(120,V.dsz+s*2));else V.brush=Math.max(4,Math.min(120,V.brush+s*6));sync()}}});
+/* ---------- drawing layer ---------- */
+function symm(x,sym,cw,ch,fn){const mx=()=>{x.translate(cw,0);x.scale(-1,1)},my=()=>{x.translate(0,ch);x.scale(1,-1)};let L=[[]];
+ if(sym==='x')L=[[],[mx]];else if(sym==='y')L=[[],[my]];else if(sym==='xy')L=[[],[mx],[my],[mx,my]];
+ else if(sym!=='none'){const n=+sym.slice(1),k=sym[0]==='k';L=[];for(let i=0;i<n;i++){const r=()=>{x.translate(cw/2,ch/2);x.rotate(i*2*Math.PI/n);x.translate(-cw/2,-ch/2)};L.push([r]);if(k)L.push([r,mx])}}
+ L.forEach(fs=>{x.save();fs.forEach(f=>f());fn();x.restore()})}
+function bbox(Q){let a=1e9,b=1e9,c=-1e9,d=-1e9;Q.forEach(([X,Y])=>{a=Math.min(a,X);b=Math.min(b,Y);c=Math.max(c,X);d=Math.max(d,Y)});return[a,b,Math.max(c,a+1),Math.max(d,b+1)]}
+function gpaint(x,s,Q){const[a,b,c,d]=bbox(Q),g=x.createLinearGradient(a,b,c,d);g.addColorStop(0,s.c);g.addColorStop(1,s.c2);return g}
+function fpath(x,Q){x.beginPath();x.moveTo(Q[0][0],Q[0][1]);if(Q.length<2){x.lineTo(Q[0][0]+.1,Q[0][1]);return}for(let i=1;i<Q.length-1;i++){const[m,n]=Q[i],[o,q]=Q[i+1];x.quadraticCurveTo(m,n,(m+o)/2,(n+q)/2)}const l=Q[Q.length-1];x.lineTo(l[0],l[1])}
+function shape(x,s,Q,w,cw,ch){const t=s.t,sp=()=>s.g?gpaint(x,s,Q):s.c;
+ switch(t){
+ case'pen':x.lineWidth=w;x.strokeStyle=sp();fpath(x,Q);x.stroke();return;
+ case'marker':x.globalAlpha*=.5;x.lineCap='square';x.lineWidth=w*1.8;x.strokeStyle=sp();fpath(x,Q);x.stroke();return;
+ case'neon':x.shadowColor=s.c;x.shadowBlur=w*2+8;x.lineWidth=w;x.strokeStyle=sp();fpath(x,Q);x.stroke();x.stroke();x.shadowBlur=0;x.lineWidth=Math.max(1,w*.35);x.strokeStyle='rgba(255,255,255,.9)';x.stroke();return;
+ case'rainbow':if(Q.length<2){x.fillStyle=`hsl(${s.h},90%,60%)`;x.beginPath();x.arc(Q[0][0],Q[0][1],w/2,0,7);x.fill();return}x.lineWidth=w;for(let i=1;i<Q.length;i++){x.strokeStyle=`hsl(${(s.h+i*4)%360},90%,60%)`;x.beginPath();x.moveTo(Q[i-1][0],Q[i-1][1]);x.lineTo(Q[i][0],Q[i][1]);x.stroke()}return;
+ case'spray':{const D=s.dots.map(p=>[p[0]*cw,p[1]*ch]);if(!D.length)return;x.fillStyle=s.g?gpaint(x,s,D):s.c;const r=Math.max(.7,w*.07);x.beginPath();D.forEach(([X,Y])=>{x.moveTo(X+r,Y);x.arc(X,Y,r,0,7)});x.fill();return}
+ case'callig':{x.fillStyle=sp();const nx=w*.3536,ny=-w*.3536;for(let i=0;i<Q.length;i++){const a=Q[Math.max(0,i-1)],b=Q[i];x.beginPath();x.moveTo(a[0]+nx,a[1]+ny);x.lineTo(b[0]+nx,b[1]+ny);x.lineTo(b[0]-nx,b[1]-ny);x.lineTo(a[0]-nx,a[1]-ny);x.closePath();x.fill();if(i){x.lineWidth=1;x.strokeStyle=x.fillStyle;x.stroke()}}return}
+ case'eraser':x.globalCompositeOperation='destination-out';x.lineWidth=w;x.strokeStyle='#000';fpath(x,Q);x.stroke();return;
+ case'grad':{const[[a,b],[c,d]]=Q,g=x.createLinearGradient(a,b,c,d);g.addColorStop(0,s.c);g.addColorStop(1,s.c2);x.fillStyle=g;x.fillRect(0,0,cw,ch);return}
+ case'glow':{const[[a,b],[c,d]]=Q,r=Math.max(2,Math.hypot(c-a,d-b)),g=x.createRadialGradient(a,b,0,a,b,r);g.addColorStop(0,hexA(s.c,1));g.addColorStop(.35,hexA(s.c,.55));g.addColorStop(1,hexA(s.c,0));x.fillStyle=g;x.fillRect(0,0,cw,ch);return}}
+ if(Q.length<2)return;const[[ax,ay],[bx,by]]=Q,l=Math.min(ax,bx),tp=Math.min(ay,by),w2=Math.abs(bx-ax),h2=Math.abs(by-ay),cx=l+w2/2,cy=tp+h2/2;x.lineWidth=w;
+ if(t==='line'||t==='arrow'){x.strokeStyle=sp();const an=Math.atan2(by-ay,bx-ax),hs=Math.max(w*3,14),L=Math.hypot(bx-ax,by-ay);let ex=bx,ey=by;if(t==='arrow'&&L>hs){ex=bx-Math.cos(an)*hs*.6;ey=by-Math.sin(an)*hs*.6}
+  x.beginPath();x.moveTo(ax,ay);x.lineTo(ex,ey);x.stroke();if(t==='arrow'){x.fillStyle=x.strokeStyle;x.beginPath();x.moveTo(bx,by);x.lineTo(bx-Math.cos(an-.45)*hs,by-Math.sin(an-.45)*hs);x.lineTo(bx-Math.cos(an+.45)*hs,by-Math.sin(an+.45)*hs);x.closePath();x.fill()}return}
+ x.beginPath();
+ if(t==='rect')x.rect(l,tp,w2,h2);
+ else if(t==='rrect'){const r=Math.min(w2,h2)*.22;x.moveTo(l+r,tp);x.arcTo(l+w2,tp,l+w2,tp+h2,r);x.arcTo(l+w2,tp+h2,l,tp+h2,r);x.arcTo(l,tp+h2,l,tp,r);x.arcTo(l,tp,l+w2,tp,r);x.closePath()}
+ else if(t==='ellipse')x.ellipse(cx,cy,w2/2,h2/2,0,0,Math.PI*2);
+ else if(t==='tri'){x.moveTo(cx,tp);x.lineTo(l+w2,tp+h2);x.lineTo(l,tp+h2);x.closePath()}
+ else if(t==='star'){for(let i=0;i<10;i++){const r=i%2?.42:1,a=-Math.PI/2+i*Math.PI/5;x[i?'lineTo':'moveTo'](cx+Math.cos(a)*r*w2/2,cy+Math.sin(a)*r*h2/2)}x.closePath()}
+ else if(t==='heart'){x.moveTo(cx,tp+h2*.3);x.bezierCurveTo(cx,tp,l,tp,l,tp+h2*.3);x.bezierCurveTo(l,tp+h2*.6,cx,tp+h2*.78,cx,tp+h2);x.bezierCurveTo(cx,tp+h2*.78,l+w2,tp+h2*.6,l+w2,tp+h2*.3);x.bezierCurveTo(l+w2,tp,cx,tp,cx,tp+h2*.3);x.closePath()}
+ const sm=s.sm;if(sm!=='stroke'){x.fillStyle=s.g?gpaint(x,s,Q):sm==='both'?s.c2:s.c;x.fill()}if(sm!=='fill'){x.strokeStyle=s.g&&sm==='stroke'?gpaint(x,s,Q):s.c;x.stroke()}}
+function drawS(x,s,cw,ch){if(s.t==='text'){textDraw(x,s.o,cw,ch);return}
+ const w=Math.max(.5,s.w*cw/1000),Q=s.p.map(p=>[p[0]*cw,p[1]*ch]);x.save();x.globalAlpha=s.op;x.lineCap='round';x.lineJoin='round';
+ const run=()=>shape(x,s,Q,w,cw,ch);if(NOSYM.has(s.t)||s.sym==='none')run();else symm(x,s.sym,cw,ch,run);x.restore()}
+function paint(cw,ch){const live=down&&curS,fin=live?drw.slice(0,-1):drw,key=[cw,ch,dver,fin.length].join();
+ if(cache.pk!==key){pc.width=cw;pc.height=ch;const x=pc.getContext('2d');fin.forEach(s=>drawS(x,s,cw,ch));cache.pk=key}
+ if(!live)return pc;lc.width=cw;lc.height=ch;const x=lc.getContext('2d');x.drawImage(pc,0,0);drawS(x,curS,cw,ch);return lc}
+/* ---------- render ---------- */
+const TC={};function tile(t){if(TC[t])return TC[t];const n=t==='paper'?128:t==='dots'?16:t==='grid'?32:t==='checker'?40:12,c=document.createElement('canvas');c.width=c.height=n;const x=c.getContext('2d');x.fillStyle=x.strokeStyle='#000';
+ if(t==='dots'){x.beginPath();x.arc(8,8,3,0,7);x.fill()}
+ else if(t==='stripes'){x.lineWidth=4;x.beginPath();x.moveTo(-2,14);x.lineTo(14,-2);x.moveTo(-2,2);x.lineTo(2,-2);x.moveTo(10,14);x.lineTo(14,10);x.stroke()}
+ else if(t==='checker'){x.fillRect(0,0,20,20);x.fillRect(20,20,20,20)}else if(t==='grid'){x.lineWidth=2;x.strokeRect(0,0,32,32)}
+ else{const d=x.createImageData(n,n);for(let i=0;i<n*n;i++)d.data[i*4+3]=Math.random()*200;x.putImageData(d,0,0)}return TC[t]=c}
+function subject(){const k=[ver,V.flt,V.bri,V.con,V.sat,V.warm,V.tex,V.txa,V.flt==='duo'?V.c1+V.c2:''].join();if(cache.s===k)return;cache.s=k;
+ sc.width=W;sc.height=H;const x=sc.getContext('2d'),id=x.createImageData(W,H),d=id.data,f=V.flt,br=V.bri/100,co=V.con/100*(f==='drama'?1.45:f==='noir'?1.35:1),wm=V.warm/400,d1=rgbOf(V.c1),d2=rgbOf(V.c2);let sa=V.sat/100;if(f==='pop')sa*=1.5;
+ for(let i=0,n=W*H;i<n;i++){const j=i*4;let r=rgb[j],g=rgb[j+1],b=rgb[j+2];
+  if(f==='bw'||f==='noir')r=g=b=.3*r+.59*g+.11*b;else if(f==='sepia'){const R=.393*r+.769*g+.189*b,Gc=.349*r+.686*g+.168*b,B=.272*r+.534*g+.131*b;r=R;g=Gc;b=B}else if(f==='cool'){r*=.9;b*=1.18}else if(f==='warm'){r*=1.14;b*=.86}else if(f==='invert'){r=255-r;g=255-g;b=255-b}else if(f==='fade'){r=r*.8+45;g=g*.8+45;b=b*.8+50}
+  else if(f==='vintage'){r=r*.9+28;g=g*.85+22;b=b*.7+18}else if(f==='cyber'){r*=1.1;g*=.82;b*=1.3}else if(f==='duo'){const t=Math.min(1,(.3*r+.59*g+.11*b)/255);r=d1[0]+(d2[0]-d1[0])*t;g=d1[1]+(d2[1]-d1[1])*t;b=d1[2]+(d2[2]-d1[2])*t}
+  r*=1+wm;b*=1-wm;const l=.3*r+.59*g+.11*b;
+  d[j]=((l+(r-l)*sa)-128)*co*br+128*br;d[j+1]=((l+(g-l)*sa)-128)*co*br+128*br;d[j+2]=((l+(b-l)*sa)-128)*co*br+128*br;d[j+3]=al[i]}
+ x.putImageData(id,0,0);
+ if(V.tex!=='none'){x.globalCompositeOperation='source-atop';x.globalAlpha=V.txa/100;x.fillStyle=x.createPattern(tile(V.tex),'repeat');x.fillRect(0,0,W,H);x.globalAlpha=1;x.globalCompositeOperation='source-over'}}
+function edt(f,w,h){const n=Math.max(w,h),v=new Int32Array(n),z=new Float32Array(n+1),g=new Float32Array(n);
+ const run=(o,s,m)=>{for(let i=0;i<m;i++)g[i]=f[o+i*s];let k=0;v[0]=0;z[0]=-1e30;z[1]=1e30;
+  for(let q=1;q<m;q++){let t;for(;;){const p=v[k];t=((g[q]+q*q)-(g[p]+p*p))/(2*q-2*p);if(t>z[k])break;k--}k++;v[k]=q;z[k]=t;z[k+1]=1e30}
+  k=0;for(let q=0;q<m;q++){while(z[k+1]<q)k++;const p=v[k];f[o+q*s]=(q-p)*(q-p)+g[p]}};
+ for(let x=0;x<w;x++)run(x,w,h);for(let y=0;y<h;y++)run(y*w,1,w)}
+function outline(){const dw=V.dbl?V.olw2:0,sf=V.olsoft;P=(V.ol?Math.ceil(V.olw+dw+sf)+4:0)+8;
+ const k=[cache.s,V.ol,V.olw,V.olcol,sf,V.dbl,V.olw2,V.olcol2,P].join();if(cache.o===k)return;
+ if(down&&(V.mode==='erase'||V.mode==='restore')&&cache.o)return;
+ cache.o=k;const lw=W+2*P,lh=H+2*P;bc.width=lw;bc.height=lh;const b=bc.getContext('2d');
+ if(!V.ol||isBlank){b.drawImage(sc,P,P);return}
+ if(cache.dv!==ver){const w=W+2*PM,h=H+2*PM,f=new Float32Array(w*h).fill(1e9);for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(al[y*W+x]>20)f[(y+PM)*w+x+PM]=0;edt(f,w,h);cache.d=f;cache.dw=w;cache.dv=ver}
+ const f=cache.d,w=cache.dw,id=b.createImageData(lw,lh),d=id.data,c1=rgbOf(V.olcol),c2=rgbOf(V.olcol2),q=PM-P,
+ sm=(r,dd)=>{const t=Math.min(1,Math.max(0,(r-dd)/(sf+1)+.5));return t*t*(3-2*t)};
+ for(let y=0;y<lh;y++)for(let x=0;x<lw;x++){const dd=Math.sqrt(f[(y+q)*w+x+q]),a1=sm(V.olw,dd),a2=dw?sm(V.olw+dw,dd):0,a=a1+a2*(1-a1);if(a>0){const i=(y*lw+x)*4,m=a2*(1-a1);for(let c=0;c<3;c++)d[i+c]=(c1[c]*a1+c2[c]*m)/a;d[i+3]=a*255}}
+ b.putImageData(id,0,0)}
+function geom(B,K){const lw=W+2*P,lh=H+2*P;let cw=Math.round(lw*K),ch=Math.round(lh*K),s=V.zoom/90*K;
+ if(V.fmt!=='orig'){const[a,b]=V.fmt.split(':').map(Number);if(a>=b){cw=B;ch=Math.round(B*b/a)}else{ch=B;cw=Math.round(B*a/b)}s=Math.min(cw/lw,ch/lh)*V.zoom/100}
+ return{cw,ch,s,k:K,lw,lh,ox:(cw-lw*s)/2+off[0]*cw,oy:(ch-lh*s)/2+off[1]*ch}}
+const ph=()=>{if(cache.pr!==rgb){const c=document.createElement('canvas');c.width=W;c.height=H;const d=new Uint8ClampedArray(rgb);for(let i=3;i<d.length;i+=4)d[i]=255;c.getContext('2d').putImageData(new ImageData(d,W,H),0,0);cache.pr=rgb;cache.pc=c}return cache.pc};
+function textDraw(c,o,cw,ch){if(!o.txt)return;const fs=cw*o.tsz/100,sh=()=>{if(o.tsh){c.shadowColor='rgba(0,0,0,.45)';c.shadowBlur=fs*.12;c.shadowOffsetY=fs*.05}};
+ c.save();c.translate(o.tx*cw,o.ty*ch);c.rotate(o.trot*Math.PI/180);c.font=`800 ${fs}px ${o.font}`;c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';
+ if(o.tsw){sh();c.lineWidth=fs*o.tsw/100;c.strokeStyle=o.tstk;c.strokeText(o.txt,0,0);c.shadowColor='transparent'}else sh();
+ let f=o.tcol;if(o.tgrad){f=c.createLinearGradient(0,-fs*.45,0,fs*.45);f.addColorStop(0,o.tcol);f.addColorStop(1,o.tcol2)}
+ c.fillStyle=f;c.fillText(o.txt,0,0);c.restore()}
+const text=(c,g)=>textDraw(c,V,g.cw,g.ch);
+function gradFill(c,cw,ch,type,ang,cols){const a=ang*Math.PI/180,x=cw/2,y=ch/2,r=Math.hypot(cw,ch)/2;let g;
+ if(type==='radial')g=c.createRadialGradient(x,y,0,x,y,r);
+ else if(type==='conic'&&c.createConicGradient){g=c.createConicGradient(a,x,y);cols=[...cols,cols[0]]}
+ else g=c.createLinearGradient(x-Math.cos(a)*r,y-Math.sin(a)*r,x+Math.cos(a)*r,y+Math.sin(a)*r);
+ cols.forEach((k,i)=>g.addColorStop(i/(cols.length-1),k));return g}
+function bgGrad(c,cw,ch){const cols=V.use3?[V.c1,V.c3,V.c2]:[V.c1,V.c2];
+ if(V.gtype!=='aurora'){c.fillStyle=gradFill(c,cw,ch,V.gtype,V.ang,cols);c.fillRect(0,0,cw,ch);return}
+ c.fillStyle=V.c1;c.fillRect(0,0,cw,ch);const a=V.ang*Math.PI/180,R=Math.max(cw,ch)*.72,bl=V.use3?[V.c2,V.c3,V.c2]:[V.c2,V.c2];
+ bl.forEach((col,i)=>{const px=cw/2+Math.cos(a+i*2.3)*cw*.32,py=ch/2+Math.sin(a+i*2.3)*ch*.32,g=c.createRadialGradient(px,py,0,px,py,R*(i===2?.6:1));g.addColorStop(0,hexA(col,.9));g.addColorStop(1,hexA(col,0));c.fillStyle=g;c.fillRect(0,0,cw,ch)})}
+function compose(cn,wb,g){cn.width=g.cw;cn.height=g.ch;const c=cn.getContext('2d'),{cw,ch,s}=g,b=V.bg;
+ if(wb&&b!=='none'){if(b==='grad')bgGrad(c,cw,ch);else{c.fillStyle=V.c1;c.fillRect(0,0,cw,ch)}
+  if(b==='blur'||b==='image'){const im=b==='blur'?ph():bgImg;if(im){const w=im.width,h=im.height,k=Math.max(cw/w,ch/h)*(b==='blur'?1.1:1);if(b==='blur')c.filter=`blur(${Math.round(18*cw/1200)}px)`;c.drawImage(im,(cw-w*k)/2,(ch-h*k)/2,w*k,h*k);c.filter='none'}}
+  else if(b!=='solid'&&b!=='grad'){c.save();c.scale(g.k,g.k);c.globalAlpha=.16;c.fillStyle=c.createPattern(tile(b),'repeat');c.fillRect(0,0,cw/g.k,ch/g.k);c.restore()}
+  if(V.gnoise){c.save();c.scale(g.k,g.k);c.globalAlpha=V.gnoise/100;c.fillStyle=c.createPattern(tile('paper'),'repeat');c.fillRect(0,0,cw/g.k,ch/g.k);c.restore()}}
+ const pl=drw.length?paint(cw,ch):null;
+ if(pl&&V.dbeh)c.drawImage(pl,0,0);
+ if(V.tbeh)text(c,g);
+ if(!isBlank){if(V.sh){const h=Math.round(V.sha*2.55).toString(16).padStart(2,'0');c.shadowColor=V.shcol+h;c.shadowBlur=V.shb*s;c.shadowOffsetX=V.shx*s;c.shadowOffsetY=V.shy*s}
+  c.drawImage(bc,g.ox,g.oy,g.lw*s,g.lh*s);c.shadowColor='transparent';c.shadowBlur=c.shadowOffsetX=c.shadowOffsetY=0;
+  if(V.ol)c.drawImage(sc,g.ox+P*s,g.oy+P*s,W*s,H*s)}
+ if(pl&&!V.dbeh)c.drawImage(pl,0,0);
+ if(V.ov&&V.oop){let keep=null;if(!wb||b==='none'){keep=document.createElement('canvas');keep.width=cw;keep.height=ch;keep.getContext('2d').drawImage(cn,0,0)}
+  c.save();c.globalAlpha=V.oop/100;c.globalCompositeOperation=V.oblend;c.fillStyle=gradFill(c,cw,ch,V.otype,V.oang,[V.oc1,V.oc2]);c.fillRect(0,0,cw,ch);c.restore();
+  if(keep){c.save();c.globalCompositeOperation='destination-in';c.drawImage(keep,0,0);c.restore()}}
+ if(wb&&V.vig){const gr=c.createRadialGradient(cw/2,ch/2,Math.min(cw,ch)*.3,cw/2,ch/2,Math.hypot(cw,ch)/2);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(1,`rgba(0,0,0,${V.vig/100*.8})`);c.fillStyle=gr;c.fillRect(0,0,cw,ch)}
+ if(!V.tbeh)text(c,g);
+ stk.forEach(o=>{c.font=`${cw*o.z/100}px sans-serif`;c.textAlign='center';c.textBaseline='middle';c.fillText(o.e,o.x*cw,o.y*ch)})}
+function draw(){raf=0;if(!rgb)return;
+ if(cmp){cv.width=W;cv.height=H;const d=new Uint8ClampedArray(rgb);for(let i=0;i<W*H;i++)d[i*4+3]=orig[i];cv.getContext('2d').putImageData(new ImageData(d,W,H),0,0);return}
+ subject();outline();G=geom(1200,1);compose(cv,true,G);const ro=UIL==='ro',n=drw.length;
+ $('#st').textContent=`${W}×${H}px · zoom ${V.zoom}%`+(n?(ro?` · ${n} element${n>1?'e':''} desenat${n>1?'e':''}`:` · ${n} drawing item${n>1?'s':''}`):'');$('#bundo').disabled=!US.length;$('#bredo').disabled=!RS.length}
+const R=()=>{raf||(raf=requestAnimationFrame(draw))};
+/* ---------- export ---------- */
+function blobOf(f,k,wb,q){subject();outline();const g=geom(1200*k,k),c=document.createElement('canvas');compose(c,wb,g);let o=c;
+ if(f!=='png'){o=document.createElement('canvas');o.width=c.width;o.height=c.height;const x=o.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,o.width,o.height);x.drawImage(c,0,0)}
+ return new Promise(r=>o.toBlob(r,'image/'+f,q/100))}
+async function showOut(){$('#qrow').style.display=exp.f==='png'?'none':'flex';const bl=await blobOf(exp.f,exp.k,exp.bg,exp.q);R();curBlob=bl;if(url)URL.revokeObjectURL(url);url=URL.createObjectURL(bl);
+ $('#out').src=url;$('#dl').href=url;$('#dl').download='thogs.'+(exp.f==='jpeg'?'jpg':exp.f);const im=new Image();im.onload=()=>$('#info').textContent=`${im.width}×${im.height}px · ${(bl.size/1024).toFixed(0)} KB`;im.src=url}
+function openExp(){if(!need())return;$('#modal').style.display='flex';showOut()}
+$('#save').onclick=openExp;$('#close').onclick=()=>$('#modal').style.display='none';$('#modal').onclick=e=>{if(e.target.id==='modal')e.target.style.display='none'};
+let qt=0;$('#qr').oninput=e=>{exp.q=+e.target.value;$('#qo').textContent=exp.q;clearTimeout(qt);qt=setTimeout(showOut,200)};
+$('#copy').onclick=async()=>{try{await navigator.clipboard.write([new ClipboardItem({'image/png':blobOf('png',exp.k,exp.bg,100)})]);toast('Copied to clipboard')}catch(e){toast('Copy is not supported here. Use Download.')}};
+$('#share').onclick=async()=>{try{const f=new File([curBlob],$('#dl').download,{type:curBlob.type});if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f]});else toast('Sharing is not available here. Use Download.')}catch(e){}};
+
+/* =====================================================================
+   Thogs AI — built-in offline helper that understands and edits (EN + RO)
+   ===================================================================== */
+const norm=s=>s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[şș]/g,'s').replace(/[ţț]/g,'t');
+let lang=UIL,aiStarted=false,curQ=null;
+const RO_W=/\b(cum|ce|fac|pot|poti|deschid|deschide|poza|poze|imagine|imaginea|fundal|fundalul|culoare|culoarea|desenez|deseneaza|sterg|sterge|salvez|salveaza|vreau|unde|este|sunt|si|nu|rog|fa|pune|scrie|ajutor|salut|buna|multumesc|mersi|meu|mea|asta|acest|aceasta|sa|imi|mi|ma|un|o|cu|pe|din|la|de|idee|mai|foarte|frumos|fain|adauga|scot|scoate|contur|umbra|luminoasa|mareste)\b/;
+const EN_W=/\b(how|what|where|the|make|can|do|is|my|you|please|open|draw|remove|add|change|set|give|show|help|thanks|hello|hi|which|why|want|apply|write|another|random|me|it|a|an|with|and|more|less|bigger)\b/;
+const COL={blu:'#2f6bff',blk:'#111111',wite:'#ffffff',whit:'#ffffff',gren:'#22c55e',yelow:'#ffd21f',purpel:'#8b5cf6',purle:'#8b5cf6',pnk:'#ff5fa2',red:'#ff3b3b',rosu:'#ff3b3b',rosie:'#ff3b3b',rosii:'#ff3b3b',blue:'#2f6bff',albastru:'#2f6bff',albastra:'#2f6bff',albastre:'#2f6bff',green:'#22c55e',verde:'#22c55e',verzi:'#22c55e',yellow:'#ffd21f',galben:'#ffd21f',galbena:'#ffd21f',galbene:'#ffd21f',purple:'#8b5cf6',violet:'#8b5cf6',mov:'#8b5cf6',pink:'#ff5fa2',roz:'#ff5fa2',orange:'#ff8a1f',portocaliu:'#ff8a1f',portocalie:'#ff8a1f',black:'#111111',negru:'#111111',neagra:'#111111',negre:'#111111',white:'#ffffff',alb:'#ffffff',alba:'#ffffff',albe:'#ffffff',gray:'#8a8a99',grey:'#8a8a99',gri:'#8a8a99',cyan:'#00d4ff',turcoaz:'#14d8c8',teal:'#14b8a6',brown:'#8b5a2b',maro:'#8b5a2b',gold:'#f5c542',golden:'#f5c542',auriu:'#f5c542',aurie:'#f5c542',navy:'#1b2a6b',bleumarin:'#1b2a6b',lime:'#a3e635',beige:'#e9d8b4',bej:'#e9d8b4',silver:'#c0c0c8',argintiu:'#c0c0c8',argintie:'#c0c0c8',magenta:'#ff00cc',crem:'#fff3d6',cream:'#fff3d6',bordo:'#7a1028',lila:'#c8a2ff'};
+const TW={star:'star',stea:'star',heart:'heart',inima:'heart',circle:'ellipse',cerc:'ellipse',ellipse:'ellipse',oval:'ellipse',rectangle:'rect',rect:'rect',dreptunghi:'rect',square:'rect',patrat:'rect',arrow:'arrow',sageata:'arrow',line:'line',linie:'line',triangle:'tri',triunghi:'tri',neon:'neon',rainbow:'rainbow',curcubeu:'rainbow',spray:'spray',marker:'marker',pen:'pen',pix:'pen',calligraphy:'callig',caligrafie:'callig',glow:'glow',eraser:'eraser',guma:'eraser'};
+const EMN={inima:'❤️',inimi:'❤️',inimioare:'💖',heart:'❤️',hearts:'❤️',stea:'⭐',stele:'⭐',steluta:'⭐',stelute:'⭐',star:'⭐',stars:'⭐',foc:'🔥',fire:'🔥',flacari:'🔥',coroana:'👑',crown:'👑',sclipici:'✨',sclipiri:'✨',sparkles:'✨',sparkle:'✨',curcubeu:'🌈',rainbow:'🌈',soare:'☀️',sun:'☀️',luna:'🌙',moon:'🌙',racheta:'🚀',rocket:'🚀',ochelari:'😎',sunglasses:'😎',petrecere:'🎉',confetti:'🎉',unicorn:'🦄',floare:'🌸',flori:'🌸',flower:'🌸',flowers:'🌸',fulger:'⚡',lightning:'⚡',diamant:'💎',diamond:'💎',fluture:'🦋',fluturi:'🦋',butterfly:'🦋',pisica:'🐱',cat:'🐱',caine:'🐶',catel:'🐶',dog:'🐶',pizza:'🍕',cadou:'🎁',gift:'🎁',muzica:'🎵',music:'🎵',nor:'☁️',nori:'☁️',cloud:'☁️',val:'🌊',wave:'🌊',like:'👍',ras:'😂',laugh:'😂',controller:'🎮',gaming:'🎮',trofeu:'🏆',trophy:'🏆',bani:'💸',money:'💸',ochi:'👀',eyes:'👀'};
+const STOP=/^(contur|outline|border|chenar|umbr|shadow|text|titlu|scris|pensul|brush|sticker|emoji|fundal|background|bg|overlay|nuanta|si|and)/;
+const VOC=new Set([...Object.keys(COL),...Object.keys(TW),...Object.keys(EMN),...Object.keys(GP).map(s=>s.toLowerCase()),...Object.keys(PRE).map(s=>s.toLowerCase()),
+ 'fundal','fundalul','fundalului','background','contur','conturul','conturului','outline','umbra','umbre','shadow','luminoasa','luminos','luminozitate','intunecat','intunecata','intuneca','saturatie','contrast','contrastul','gradient','gradientul','sticker','stickere','stickerul','emoji','textul','scrie','deseneaza','desenez','pensula','pensulei','simetrie','oglindeste','roteste','transparent','transparenta','vigneta','vignette','brightness','brighter','darker','remove','sterge','scoate','adauga','sepia','vintage','dramatic','format','story','youtube','export','salveaza','descarca','petrecere','cinematic','granulatie','overlay','centreaza','mareste','micsoreaza','rotate','flip','mirror','stralucire','straluceste','filtru','filtrul','culoare','culoarea','culorile','imaginea','poza','pozei','deschide','titlul','literele','reseteaza','aleator','random','mandala','kaleido','temperatura','calda','rece','vibrant','saturat','decupeaza','instagram','tiktok','portret','dublu','double','subtire','gros','grosime','glow','blurat','neclar','buline','dungi','hartie','iarna','vara','horror','romantic','professional','profesional','visator','vechi','veche','pastel','style','styles','steal','stile','thick','thicker','shape','shapes','about','there','these','those','things','stuff','still','stick']);
+function lev(a,b){if(Math.abs(a.length-b.length)>2)return 9;let p=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){const c=[i];for(let j=1;j<=b.length;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[b.length]}
+function fixTok(t){if(t.length<5||VOC.has(t))return t;const lim=t.length>=8?2:1;let best=t,bd=9;for(const v of VOC){if(v[0]!==t[0])continue;const d=lev(t,v);if(d<bd){bd=d;best=v}}return bd<=lim?best:t}
+const lighten=h=>toHex(rgbOf(h).map(v=>v+(255-v)*.55)),sw=h=>`<span class="sw" style="background:${h}"></span>`;
+const B=(en,ro,f)=>[en,ro,f],openF=()=>$('#file').click(),esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const noImg=ro=>rgb?'':(ro?'<br><i>(Deschide o poză sau o pânză goală ca să vezi rezultatul.)</i>':'<br><i>(Open a photo or a blank canvas to see it.)</i>');
+const ensure=r=>{if(!rgb)blank(r);else{V.fmt=r;off=[0,0]}};
+function colsAfter(toks,re){const i=toks.findIndex(t=>re.test(t));if(i<0)return[];const out=[];for(let j=i+1;j<toks.length;j++){if(j>i+1&&STOP.test(toks[j])&&!COL[toks[j]])break;if(COL[toks[j]])out.push(COL[toks[j]])}
+ if(!out.length)for(let j=i-1;j>=Math.max(0,i-2);j--)if(COL[toks[j]]){out.push(COL[toks[j]]);break}return out}
+const A=(en,ro,f,need)=>({en,ro,f,need});
+function acts(n){const toks=n.split(/\s+/).filter(Boolean),cols=toks.map(t=>COL[t]).filter(Boolean),L=[],has=r=>r.test(n),
+ rm=has(/\b(remove|delete|erase|disable|turn off|no|without|sterge|scoate|elimina|opreste|dezactiveaza|fara|scot|sterg|ia|nu mai)\b/),
+ up=has(/\b(more|bigger|higher|increase|stronger|thick|thicker|brighter|larger|mai mult|mai mare|mai tare|mai gros|mareste|creste|gros|intens)\b/),
+ dn=has(/\b(less|smaller|lower|decrease|weaker|thinner|mai putin|mai mic|mai slab|mai subtire|micsoreaza|scade|subtire|redu)\b/),
+ mul=has(/\b(very|much|foarte|mult|super|tare|extra)\b/)?2:1,
+ txW=has(/\b(text|textul|textului|scris|scrisul|titlu|titlul|font|fontul|literele|qqq)\b/),
+ drW=has(/\b(draw|deseneaza|desenez|desen|pensula|pensulei|brush|creion|pix)\b/),
+ stW=has(/\b(stickere?\w*|emoji\w*|abtibild\w*)\b/),
+ grW=has(/\b(gradient\w*|degrade)\b/),bgW=has(/\b(background|backdrop|fundal\w*|bg)\b/);
+ // general commands
+ if(has(/^(undo|anuleaza|da inapoi|inapoi)\b/))L.push(A('Undo','Am anulat ultima modificare',undo));
+ if(has(/^(redo|refa)\b/))L.push(A('Redo','Am refăcut',redo));
+ if(has(/\b(export\w*|download|descarca|salveaza|save)\b/))L.push(A('Opened the export window','Am deschis fereastra de salvare',openExp,'img'));
+ if(has(/(dark mode|light mode|mod intunecat|mod luminos|\btema\b|\btheme\b)/))L.push(A('Switched light/dark theme','Am schimbat tema',()=>$('#theme').click()));
+ const blankW=has(/\b(blank|new canvas|empty canvas|canvas nou|panza|canvas gol|foaie goala)\b/);
+ if(blankW){const r=has(/(story|tiktok|vertical|telefon|phone)/)?'9:16':has(/(wide|youtube|lat|orizontal)/)?'16:9':has(/(portrait|portret)/)?'4:5':'1:1';L.push(A('New blank canvas '+r,'Pânză goală nouă '+r,()=>blank(r)))}
+ if(has(/^(open|deschide|incarca|upload)\b/)&&has(/(photo|image|picture|poza|imagine|fotografie|file|fisier)/))L.push(A('Opened the photo picker','Am deschis alegerea pozei',openF));
+ // background removal / background
+ const rmbg=has(/\b(remove|delete|erase|sterge|scoate|elimina|taie|scot|sterg|fara)\b.{0,25}\b(background|bg|fundal\w*)/)||has(/\b(cut ?out|decupeaza\w*|decupeaz\w*)\b/);
+ if(rmbg)L.push(A('Removed the background','Am scos fundalul',()=>ACT.auto(),'photo'));
+ if(has(/\btransparent\w*/))L.push(A('Transparent background','Fundal transparent',()=>{V.bg='none'}));
+ if(grW&&has(/\b(random|aleator\w*|surpri\w*|oarecare|another|alt|altul)\b/))L.push(A('Random gradient','Gradient aleator',()=>ACT.rgrad()));
+ else{const gp=Object.keys(GP).find(k=>toks.includes(k.toLowerCase()));
+  if(gp&&(grW||bgW||!PRE[gp]))L.push(A(`${gp} gradient`,`Gradient ${gp}`,()=>applyGP(gp)));
+  else if(bgW&&!rmbg&&!has(/\btransparent/)){const pat=has(/\b(blur\w*|neclar\w*|estompat\w*)\b/)?'blur':has(/\b(dots|buline|bulinut\w*)\b/)?'dots':has(/\b(stripes|dungi|dungat\w*)\b/)?'stripes':has(/\b(grid|grila|patratele)\b/)?'grid':has(/\b(paper|hartie)\b/)?'paper':has(/\b(checker|sah|tabla de sah)\b/)?'checker':null;
+   if(pat)L.push(A('Background: '+pat,'Fundal: '+pat,()=>{V.bg=pat}));
+   else{const bc=colsAfter(toks,/^(fundal|background|backdrop|bg)/);const c2=bc.length?bc:(grW?cols:[]);
+    if(c2.length>=2||(grW&&c2.length))L.push(A(`Gradient background ${c2.map(sw).join('')}`,`Fundal gradient ${c2.map(sw).join('')}`,()=>{V.bg='grad';V.c1=c2[0];V.c2=c2[1]||lighten(c2[0]);if(c2[2]){V.c3=c2[2];V.use3=true}else V.use3=false}));
+    else if(c2.length)L.push(A(`Background color ${sw(c2[0])}`,`Fundal colorat ${sw(c2[0])}`,()=>{V.bg='solid';V.c1=c2[0]}))}}
+  else if(grW&&cols.length&&!txW&&!drW)L.push(A(`Gradient ${cols.map(sw).join('')}`,`Gradient ${cols.map(sw).join('')}`,()=>{V.bg='grad';V.c1=cols[0];V.c2=cols[1]||lighten(cols[0]);if(cols[2]){V.c3=cols[2];V.use3=true}else V.use3=false}))}
+ // styles & vibes
+ const pk=has(/\bpop art\b/)?'Pop art':has(/\b(sticker (style|look)|stil\w* sticker)\b/)?'Sticker':Object.keys(PRE).find(k=>k!=='Pop art'&&k!=='Sticker'&&toks.includes(k.toLowerCase()));
+ if(pk&&!drW&&!(pk==='Cyber'&&grW))L.push(A(`${pk} style`,`Stilul ${pk}`,()=>preset(pk)));
+ [[/\b(cinematic|film|movie)\b/,'Cinematic look','Look cinematic',()=>Object.assign(V,{ov:true,oc1:'#ff8a1f',oc2:'#14b8a6',oblend:'overlay',oop:45,oang:135,con:115,vig:35})],
+  [/\b(summer|vara|beach|plaja)\b/,'Summer vibe','Vibe de vară',()=>{applyGP('Sunset');Object.assign(V,{warm:40,sat:120})}],
+  [/\b(winter|iarna|snow|zapada|frozen)\b/,'Winter vibe','Vibe de iarnă',()=>{applyGP('Ocean');Object.assign(V,{warm:-45,bri:108})}],
+  [/\b(horror|spooky|creepy|scary|infricosator\w*|horor|halloween)\b/,'Spooky look','Look horror',()=>Object.assign(V,{flt:'noir',vig:75,con:125,ov:true,oc1:'#8b0000',oc2:'#000000',oblend:'multiply',oop:35})],
+  [/\b(party|petrecere|birthday|aniversare|ziua mea)\b/,'Party mode','Mod petrecere',()=>{preset('Pop art');['🎉','✨','🥳'].forEach((e,i)=>stk.push({e,x:[.15,.85,.82][i],y:[.15,.18,.82][i],z:V.ssz}))}],
+  [/\b(old|vechi|veche|antic\w*|nostalgic\w*)\b/,'Old photo look','Look de poză veche',()=>preset('Retro')],
+  [/\b(professional|profesional\w*|curat|corporate|linkedin|cv)\b/,'Clean professional look','Look profesional',()=>preset('Clean')],
+  [/\b(dream\w*|visator\w*|fairy|pastel)\b/,'Dreamy look','Look visător',()=>preset('Dreamy')],
+  [/\b(love|dragoste|romantic\w*|valentine)\b/,'Romantic look','Look romantic',()=>{applyGP('Candy');stk.push({e:'💖',x:.85,y:.15,z:V.ssz})}],
+  [/\b(gaming|gamer|esports)\b/,'Gamer look','Look de gamer',()=>preset('Cyber')]].forEach(([re,en,ro,f])=>{if(has(re))L.push(A(en,ro,f))});
+ // filters
+ const fm=[[/\b(alb negru|alb si negru|black and white|black white|bw|grayscale|greyscale|monocrom\w*)\b/,'bw','Black & white filter','Filtru alb-negru'],[/\bnoir\b/,'noir','Noir filter','Filtru noir'],[/\bsepia\b/,'sepia','Sepia filter','Filtru sepia'],[/\bvintage\b/,'vintage','Vintage filter','Filtru vintage'],
+  [/\b(invert\w*|negativ)\b/,'invert','Inverted colors','Culori inversate'],[/\b(faded|stears\w*|decolorat\w*)\b/,'fade','Faded filter','Filtru șters'],[/\b(drama|dramatic\w*)\b/,'drama','Dramatic filter','Filtru dramatic'],[/\b(duotone|duoton)\b/,'duo','Duotone filter','Filtru duotone'],
+  [/\b(no filter|fara filtru|remove filter|scoate filtrul|sterge filtrul|filtru normal)\b/,'none','Filter removed','Am scos filtrul']].find(([re])=>has(re));
+ if(fm)L.push(A(fm[2],fm[3],()=>{V.flt=fm[1]}));else if(has(/\bpop\b/)&&!has(/pop art/))L.push(A('Pop colors','Culori pop',()=>{V.flt='pop'}));
+ // light & color
+ const dm=has(/(dark mode|mod intunecat)/);
+ if(has(/\b(warm\w*|cald\w*|calduros)\b/)&&!has(/\b(cool|rece)\b/))L.push(A(dn?'Less warm':'Warmer colors',dn?'Mai puțin cald':'Culori mai calde',()=>{V.warm=clamp(V.warm+(dn?-30:35)*mul,-100,100)}));
+ if(has(/\b(cool\w*|cold|rece|racoros)\b/))L.push(A('Cooler colors','Culori mai reci',()=>{V.warm=clamp(V.warm-35*mul,-100,100)}));
+ if(has(/\b(bright\w*|luminoas\w*|luminos\w*|lumineaz\w*|lighter|luminat\w*|luminozitate\w*)\b/)){const d=dn||rm;L.push(A(d?'Darker':'Brighter',d?'Mai întunecată':'Mai luminoasă',()=>{V.bri=clamp(V.bri+(d?-18:18)*mul,50,150)}))}
+ else if(!dm&&has(/\b(darker|darken|dark|intunec\w*|mai inchis\w*)\b/)&&!has(/vignet|margini/))L.push(A('Darker','Mai întunecată',()=>{V.bri=clamp(V.bri-18*mul,50,150)}));
+ if(has(/\bcontrast\w*/)){const d=dn||rm;L.push(A(d?'Less contrast':'More contrast',d?'Contrast mai mic':'Contrast mai mare',()=>{V.con=clamp(V.con+(d?-20:20)*mul,50,150)}))}
+ if(has(/\b(desatur\w*|muted|pal|pala|spalat\w*)\b/))L.push(A('Less saturation','Culori mai șterse',()=>{V.sat=clamp(V.sat-40*mul,0,200)}));
+ else if(has(/\b(saturat\w*|saturatie|vibrant\w*|vie|vii|colorful|colorat\w*)\b/)&&!txW&&!drW){const d=dn||rm;L.push(A(d?'Less saturation':'More vivid colors',d?'Culori mai șterse':'Culori mai vii',()=>{V.sat=clamp(V.sat+(d?-40:40)*mul,0,200)}))}
+ if(has(/\b(vignet\w*|vigneta|dark edges|margini\w* intunecate)\b/))L.push(A(rm?'Vignette off':'Vignette',rm?'Am scos vigneta':'Vignetă (margini întunecate)',()=>{V.vig=rm?0:clamp((V.vig||0)+(dn?-20:45),0,100)}));
+ if(has(/\b(grain\w*|granul\w*|noise|zgomot)\b/))L.push(A(rm?'Grain off':'Film grain',rm?'Fără granulație':'Granulație de film',()=>{V.gnoise=rm?0:18}));
+ if(has(/\b(overlay|nuanta|tint\w*|color grade)\b/)){const oc=colsAfter(toks,/^(overlay|nuanta|tint)/);L.push(A(rm?'Overlay off':`Color overlay ${oc.map(sw).join('')}`,rm?'Am scos filtrul de culoare':`Filtru de culoare ${oc.map(sw).join('')}`,()=>{if(rm){V.ov=false;return}V.ov=true;if(oc[0])V.oc1=oc[0];if(oc[1])V.oc2=oc[1]}))}
+ // outline, shadow, glow
+ const olW=has(/\b(outline\w*|contur\w*|border\w*|chenar\w*|margine\w*)\b/)&&!txW;
+ if(olW){const oc=colsAfter(toks,/^(outline|contur|border|chenar|margin)/),gl=has(/glow|straluc/),db=has(/(dublu|double)/);
+  L.push(A(rm?'Outline removed':`Outline ${oc[0]?sw(oc[0]):''}${up?' thicker':''}${dn?' thinner':''}${gl?' glowing':''}${db?' double':''}`,rm?'Am scos conturul':`Contur ${oc[0]?sw(oc[0]):''}${up?' mai gros':''}${dn?' mai subțire':''}${gl?' strălucitor':''}${db?' dublu':''}`,
+   ()=>{if(rm){V.ol=false;return}V.ol=true;if(oc[0])V.olcol=oc[0];if(up)V.olw=clamp(V.olw+6*mul,2,50);if(dn)V.olw=clamp(V.olw-5*mul,2,50);if(gl)V.olsoft=12;if(db){V.dbl=true;if(oc[1])V.olcol2=oc[1]}},'img'))}
+ if(has(/\b(shadow\w*|umbr\w*)\b/)&&!txW){const sc2=colsAfter(toks,/^(shadow|umbr)/);
+  L.push(A(rm?'Shadow removed':`Shadow ${sc2[0]?sw(sc2[0]):''}`,rm?'Am scos umbra':`Umbră ${sc2[0]?sw(sc2[0]):''}${up?' mai mare':''}`,()=>{if(rm){V.sh=false;return}V.sh=true;if(sc2[0])V.shcol=sc2[0];if(up){V.shb=clamp(V.shb+20,0,80);V.sha=clamp(V.sha+15,0,100)}if(dn)V.sha=clamp(V.sha-20,0,100)},'img'))}
+ if(has(/\b(glow\w*|straluc\w*)\b/)&&!olW&&!drW&&!txW){const gc=cols[0]&&cols[0]!=='#ffffff'?cols[0]:'#00e5ff';
+  L.push(A(rm?'Glow removed':`Glow ${sw(gc)}`,rm?'Am scos strălucirea':`Strălucire ${sw(gc)}`,()=>{if(rm){Object.assign(V,{olsoft:0,shb:22,shy:10,sha:60,shcol:'#000000'});return}Object.assign(V,{sh:true,shb:55,shx:0,shy:0,sha:90,shcol:gc,olsoft:10})},'img'))}
+ // geometry
+ const symW=has(/\b(simetri\w*|symmetr\w*|mandala|kaleido\w*)\b/)||(drW&&has(/\b(mirror|oglind\w*)\b/));
+ if(symW){const s=rm?'none':has(/mandala/)?'m6':has(/kaleido/)?'k8':has(/(vertical|sus jos|up down)/)?'y':has(/(quad|patru|4)/)?'xy':'x';L.push(A('Symmetry: '+s,'Simetrie: '+s,()=>{if(!rgb)blank('1:1');V.dsym=s;setTool(V.dtool==='pick'?'neon':V.dtool)}))}
+ else if(has(/\b(flip\w*|oglindeste|oglindit\w*|intoarce|mirror)\b/))L.push(A('Flipped the photo','Am oglindit poza',()=>ACT.flip(),'photo'));
+ if(has(/\b(rotate\w*|roteste|rotire|rotit\w*)\b/)&&!txW)L.push(A('Rotated 90°','Am rotit 90°',()=>ACT.rot(),'photo'));
+ if(has(/\b(zoom\w*|bigger|larger|enlarge|mareste|mai mare|smaller|mai mic|micsoreaza)\b/)&&!txW&&!stW&&!olW&&!drW&&!has(/\b(shadow|umbr\w*|contrast)\b/)){const inn=!has(/\b(smaller|mai mic|micsoreaza|zoom out)\b/);
+  L.push(A(inn?'Subject bigger':'Subject smaller',inn?'Subiect mai mare':'Subiect mai mic',()=>{V.zoom=clamp(V.zoom+(inn?15:-15)*mul,30,160)},'img'))}
+ if(has(/\b(center\w*|centreaza|centru|la mijloc|in mijloc)\b/)&&!txW&&!stW)L.push(A('Centered the subject','Am centrat subiectul',()=>ACT.ctr()));
+ // text
+ if(has(/qqq/)&&curQ!==null){const qt=curQ;L.push(A(`Text “${esc(qt)}”`,`Text „${esc(qt)}”`,()=>{V.txt=qt;V.mode='mtext';chSync();setM()},'img'))}
+ if(txW){const tc=colsAfter(toks,/^(text|textul|textului|scris|titlu|titlul|literele|qqq|font)/),olT=has(/\b(contur\w*|stroke|outline)\b/);
+  if(rm&&!has(/qqq/)&&!olT&&!has(/umbr|shadow/))L.push(A('Text removed','Am șters textul',()=>{V.txt=''}));
+  else{
+   if(tc.length&&!olT)L.push(A(`Text color ${tc.map(sw).join('')}`,`Culoare text ${tc.map(sw).join('')}`,()=>{V.tcol=tc[0];if(tc[1]){V.tcol2=tc[1];V.tgrad=true}}));
+   if(olT){const s3=colsAfter(toks,/^(contur|stroke|outline)/);L.push(A(rm?'Text outline off':`Text outline ${s3[0]?sw(s3[0]):''}`,rm?'Fără contur la text':`Contur text ${s3[0]?sw(s3[0]):''}`,()=>{if(rm){V.tsw=0;return}if(s3[0])V.tstk=s3[0];V.tsw=Math.max(V.tsw,8)}))}
+   const ty=has(/\b(sus|top|deasupra|upper)\b/)?.14:has(/\b(jos|bottom|dedesubt|lower)\b/)?.86:has(/\b(mijloc|middle|centru|center|centrat)\b/)?.5:null,tx=has(/\b(stanga|left)\b/)?.27:has(/\b(dreapta|right)\b/)?.73:null;
+   if(ty!==null||tx!==null)L.push(A('Moved the text','Am mutat textul',()=>{if(ty!==null)V.ty=ty;V.tx=tx!==null?tx:.5}));
+   if(up&&!olT)L.push(A('Bigger text','Text mai mare',()=>{V.tsz=clamp(V.tsz+4*mul,4,40)}));if(dn&&!olT)L.push(A('Smaller text','Text mai mic',()=>{V.tsz=clamp(V.tsz-3*mul,4,40)}));
+   const fnt=has(/\bimpact\b/)?0:has(/\barial\b/)?1:has(/\b(elegant\w*|georgia|frumos|fancy|serif)\b/)?2:has(/\b(script|de mana|handwriting|caligrafic\w*)\b/)?3:has(/\b(typewriter|masina de scris|courier)\b/)?4:has(/\bcomic\b/)?6:has(/\b(modern|simplu|simple)\b/)?7:-1;
+   if(fnt>=0)L.push(A('Font: '+FONTS[fnt][1],'Font: '+tr(FONTS[fnt][1]),()=>{V.font=FONTS[fnt][0]}));
+   if(has(/\b(behind|in spate\w*|spatele|in spatele)\b/))L.push(A('Text behind the subject','Text în spatele subiectului',()=>{V.tbeh=true}));
+   if(has(/\b(in fata|in front)\b/))L.push(A('Text in front','Text în față',()=>{V.tbeh=false}));
+   if(grW)L.push(A('Gradient text','Text în gradient',()=>{V.tgrad=true;if(tc[1])V.tcol2=tc[1]}));
+   if(has(/\b(rotate\w*|roteste|inclinat\w*|tilt\w*|oblic)\b/))L.push(A('Tilted text','Text înclinat',()=>{V.trot=V.trot?0:-10}));
+   if(has(/\b(umbr\w*|shadow)\b/))L.push(A(rm?'Text shadow off':'Text shadow',rm?'Fără umbră la text':'Umbră la text',()=>{V.tsh=!rm}))}}
+ // stickers
+ if(stW&&rm)L.push(A('Stickers cleared','Am șters stickerele',()=>{stk=[]}));
+ else if(stW||(has(/\b(adauga|pune|add|put)\b/)&&!drW)){const em=[...new Set(toks.map(t=>EMN[t]).filter(Boolean))];if(em.length)L.push(A('Stickers '+em.join(' '),'Stickere '+em.join(' '),()=>em.forEach((e,i)=>stk.push({e,x:[.18,.82,.2,.8,.5][i%5],y:[.18,.2,.8,.82,.12][i%5],z:V.ssz})),'img'))}
+ if(stW&&(up||dn)&&!rm)L.push(A(up?'Bigger stickers':'Smaller stickers',up?'Stickere mai mari':'Stickere mai mici',()=>stk.forEach(o=>o.z=clamp(o.z+(up?5:-4),4,60))));
+ // drawing tools
+ if(drW||has(/\b(tool|unealta)\b/)){const tw=toks.map(t=>TW[t]).find(Boolean),dc=cols[0];
+  if(rm&&!tw)L.push(A('Drawing cleared','Am șters desenul',()=>ACT.dclr()));
+  else if(tw)L.push(A(`Tool ready: ${tw}${dc?' '+sw(dc):''} — drag on the canvas`,`Unealta ${tw}${dc?' '+sw(dc):''} e gata — trage pe pânză`,()=>{if(!rgb)blank('1:1');if(dc)V.dcol=dc;if(cols[1]){V.dcol2=cols[1];V.dgrad=true}if(['star','heart','ellipse','rect','tri'].includes(tw)&&V.dshape==='stroke')V.dshape='fill';setTool(tw)}));
+  else if(cols.length)L.push(A(`Brush color ${cols.map(sw).join('')}`,`Culoare pensulă ${cols.map(sw).join('')}`,()=>{V.dcol=cols[0];if(cols[1]){V.dcol2=cols[1];V.dgrad=true}setTool(V.dtool==='pick'?'pen':V.dtool)}));
+  if((up||dn)&&!tw)L.push(A(up?'Bigger brush':'Smaller brush',up?'Pensulă mai mare':'Pensulă mai mică',()=>{V.dsz=clamp(V.dsz+(up?6:-4)*mul,1,120)}))}
+ // format
+ if(!blankW&&!drW){const f=has(/\b(square|patrat|instagram)\b/)?'1:1':has(/\b(story|tiktok|reels|shorts)\b/)?'9:16':has(/\b(youtube|thumbnail|wide|orizontal|landscape)\b/)?'16:9':has(/\b(portret|portrait)\b/)?'4:5':has(/\b(format original|original size|marime originala)\b/)?'orig':null;
+  if(f)L.push(A('Format '+f,'Format '+f,()=>{V.fmt=f;off=[0,0]},'img'))}
+ if(has(/\b(reset\w*|remove (all )?effects|sterge efectele|scoate efectele|fara efecte)\b/))L.push(A('Style reset','Am resetat stilul',()=>{Object.assign(V,BASE)}));
+ return L}
+function parse(q){const qm=q.match(/["“„«‘]([^"”“»’]{1,80})["”»’]/)||q.match(/'([^']{1,80})'/);curQ=qm?qm[1].trim():null;
+ const q2=qm?q.replace(qm[0],' qqq '):q,emo=[...new Set(q2.match(/\p{Extended_Pictographic}/gu)||[])];
+ let n=norm(q2).replace(/-/g,' ').replace(/[^a-z0-9\s,;.!?]/g,' ');n=n.split(/(\s+|[,;.!?])/).map(w=>/^[a-z]+$/.test(w)?fixTok(w):w).join('');
+ const wm=!qm&&q.match(/^\s*(?:write|type|scrie|adauga textul|pune textul)\s*:?\s+(.+)$/i);
+ if(wm){const t=wm[1].trim();return{acts:[A(`Text “${esc(t)}”`,`Text „${esc(t)}”`,()=>{V.txt=t;V.mode='mtext';chSync();setM()},'img')],n}}
+ const parts=n.split(/\s*(?:[,;.!?]|\bsi apoi\b|\bapoi\b|\band then\b|\bthen\b|\bsi\b|\band\b|\bplus\b|\bdupa aceea\b|\bdar\b|\bbut\b)\s*/).map(s=>s.trim()).filter(Boolean),G2=[];
+ parts.forEach(p=>{const a=acts(p);if(!a.length&&G2.length){const g=G2[G2.length-1];g.t+=' '+p;g.a=acts(g.t)}else G2.push({t:p,a})});
+ let all=G2.flatMap(g=>g.a);
+ if(emo.length)all.push(A('Stickers '+emo.join(' '),'Stickere '+emo.join(' '),()=>emo.forEach((e,i)=>stk.push({e,x:[.18,.82,.2,.8,.5][i%5],y:[.18,.2,.8,.82,.12][i%5],z:V.ssz})),'img'));
+ all=all.filter((a,i)=>all.findIndex(b=>b.en===a.en)===i);return{acts:all,n}}
+function runActs(L,ro){const saveV={...V},saveS=stk.map(o=>({...o})),done=[],skip=[];let masks=0;
+ L.forEach(a=>{if(a.need==='photo'&&(!rgb||isBlank)){skip.push(a);return}try{a.f();done.push(a);if(a.need==='photo')masks++}catch(e){}});
+ sync();chSync();setM();R();
+ let t='';if(done.length)t+=(ro?'✅ Gata! Am făcut:':'✅ Done! I did:')+'<br>'+done.map(a=>'• '+(ro?a.ro:a.en)).join('<br>');
+ if(skip.length)t+=(t?'<br><br>':'')+(ro?'⚠️ Pentru asta am nevoie de o poză adevărată: ':'⚠️ This needs a real photo: ')+skip.map(a=>ro?a.ro:a.en).join(', ');
+ if(done.some(a=>a.need==='img'))t+=noImg(ro);
+ const b=[];if(done.length)b.push([ro?'↶ Anulează asta':'↶ Revert this',()=>{Object.assign(V,saveV);stk=saveS;for(let i=0;i<masks;i++)undo();sync();chSync();setM();R();toast(ro?'Am revenit':'Reverted')}]);
+ if(skip.length||!rgb)b.push([ro?'📂 Deschide poză':'📂 Open photo',openF]);
+ return{t,b}}
+const KB=[
+ {k:['hello','hi','hey','salut','buna','servus','ceau','hola','yo'],en:`Hi! I'm <b>Thogs AI</b> 👋 Tell me what to change in your image — even several things at once, like <i>make it black and white, brighter and add a red outline</i>. Or ask me <i>how</i> to do something.`,ro:`Salut! Sunt <b>Thogs AI</b> 👋 Spune-mi ce să schimb în imagine — chiar mai multe lucruri deodată, de ex. <i>fă-o alb-negru, mai luminoasă și pune contur roșu</i>. Sau întreabă-mă <i>cum</i> se face ceva.`},
+ {k:['help','what can you do','ajutor','ce poti','ce stii','commands','comenzi','features','functii'],en:`I can <b>edit your image</b> when you tell me, for example:<br>• <i>remove the background</i><br>• <i>background gradient purple and pink</i>, <i>blurred background</i><br>• <i>black and white</i>, <i>brighter</i>, <i>more contrast</i>, <i>warmer</i>, <i>vintage</i><br>• <i>red outline</i>, <i>thicker outline</i>, <i>blue glow</i>, <i>no shadow</i><br>• <i>write "Hello" at the top in yellow</i>, <i>bigger text</i><br>• <i>add 🔥 ✨ stickers</i>, <i>add hearts</i><br>• <i>cinematic</i>, <i>summer vibe</i>, <i>spooky</i>, <i>party</i><br>• <i>draw a star</i>, <i>kaleido symmetry</i>, <i>story format</i>, <i>save</i><br>I also explain every button and give ideas 💡`,ro:`Pot să <b>editez imaginea</b> când îmi spui, de exemplu:<br>• <i>scoate fundalul</i><br>• <i>fundal gradient mov și roz</i>, <i>fundal blurat</i><br>• <i>alb-negru</i>, <i>mai luminoasă</i>, <i>mai mult contrast</i>, <i>mai caldă</i>, <i>vintage</i><br>• <i>contur roșu</i>, <i>contur mai gros</i>, <i>strălucire albastră</i>, <i>fără umbră</i><br>• <i>scrie "Salut" sus cu galben</i>, <i>text mai mare</i><br>• <i>adaugă stickere 🔥 ✨</i>, <i>pune inimioare</i><br>• <i>cinematic</i>, <i>vibe de vară</i>, <i>horror</i>, <i>petrecere</i><br>• <i>desenează o stea</i>, <i>simetrie kaleido</i>, <i>format story</i>, <i>salvează</i><br>Îți explic și fiecare buton și îți dau idei 💡`},
+ {k:['open','upload','load','import','photo','picture','deschid','deschide','incarc','incarca','poza','poze','fotografie','fisier','file'],en:`To open a photo: click <b>📂 Photo</b> at the top, drag a file onto the big area, or copy an image and press <b>Ctrl+V</b>. JPG, PNG and WEBP all work, and nothing is uploaded — it all stays in your browser.`,ro:`Ca să deschizi o poză: apasă <b>📂 Poză</b> sus, trage fișierul peste zona mare, sau copiază o imagine și apasă <b>Ctrl+V</b>. Merg JPG, PNG și WEBP, iar nimic nu se urcă pe internet — totul rămâne în browserul tău.`,b:[B('📂 Open photo','📂 Deschide poză',openF)]},
+ {k:['blank','empty','scratch','new canvas','without photo','gol','goala','panza','de la zero','fara poza','canvas nou','foaie'],en:`Click <b>✏️ Blank</b> in the header, or a size on the start screen (Square, Portrait, Story, Wide). You get an empty canvas with a gradient background — perfect for drawing, posters and wallpapers.`,ro:`Apasă <b>✏️ Pânză goală</b> sus, sau o mărime de pe ecranul de start (Pătrat, Portret, Story, Lat). Primești o pânză goală cu fundal gradient — perfectă pentru desene, postere și wallpapere.`,b:[B('⬛ Square','⬛ Pătrat',()=>blank('1:1')),B('📱 Story','📱 Story',()=>blank('9:16')),B('🖥 Wide','🖥 Lat',()=>blank('16:9'))]},
+ {k:['remove background','remove bg','cut out','cutout','transparent','auto remove','decup','sterg fundal','sterge fundal','scot fundal','scoate fundal','elimin fundal','fara fundal'],en:`Open a photo, go to the <b>✂️ Cut out</b> tab and press <b>✨ Auto-remove</b>. It works best when the background is plain. Then fix the edges: <b>🪄 Wand</b> click to remove a color area, <b>🧽 Erase</b> / <b>🖌 Restore</b> paint the mask, <b>Smooth</b> softens edges. Hold <b>👁 Compare</b> to see the original.`,ro:`Deschide o poză, mergi la fila <b>✂️ Decupare</b> și apasă <b>✨ Scoate automat</b>. Merge cel mai bine când fundalul e simplu. Apoi repari marginile: <b>🪄 Baghetă</b> click ca să scoți o zonă de culoare, <b>🧽 Șterge</b> / <b>🖌 Readu</b> pictezi masca, <b>Netezește</b> înmoaie marginile. Ține apăsat <b>👁 Compară</b> ca să vezi originalul.`,b:[B('✂️ Go to Cut out','✂️ Mergi la Decupare',()=>setTab('cut'))]},
+ {k:['wand','magic','bagheta','tolerance','toleranta'],en:`The <b>🪄 Wand</b> (key W) removes all connected pixels similar to where you click. Raise <b>Tolerance</b> to remove more. Turn on <i>Remove color everywhere</i> to remove that color from the whole image (great for green screens).`,ro:`<b>🪄 Bagheta</b> (tasta W) șterge toți pixelii apropiați ca și culoare de locul unde dai click. Mărește <b>Toleranța</b> ca să șteargă mai mult. Activează <i>Scoate culoarea peste tot</i> ca să scoți culoarea din toată imaginea (super pentru green screen).`},
+ {k:['erase','restore','mask','eraser','guma','radiera','restaurez','masca','brush size'],en:`<b>🧽 Erase</b> (E) paints parts of the photo away, <b>🖌 Restore</b> (R) paints them back. Change size with <b>[</b> and <b>]</b>. For erasing your <i>drawings</i>, use the <b>🧽 Eraser</b> brush in the ✏️ Draw tab.`,ro:`<b>🧽 Șterge</b> (E) șterge cu pensula părți din poză, <b>🖌 Readu</b> (R) le aduce înapoi. Mărimea se schimbă cu <b>[</b> și <b>]</b>. Pentru a șterge <i>desenele</i>, folosește pensula <b>🧽 Gumă</b> din fila ✏️ Desen.`},
+ {k:['shape','shapes','rectangle','circle','arrow','line','star','heart','triangle','forme','forma','desenez forme','draw shapes','dreptunghi','cerc','sageata','linie','stea','inima','triunghi','square','patrat'],en:`In the <b>✏️ Draw</b> tab pick ╱ Line, ➜ Arrow, ▭ Rect, ▢ Rounded, ◯ Ellipse, △ Triangle, ★ Star or ♥ Heart, then <b>drag on the canvas</b>. Hold <b>Shift</b> for perfect squares/circles and straight lines. Under <i>Shape fill</i> choose Outline, Filled or Fill + outline.`,ro:`În fila <b>✏️ Desen</b> alegi ╱ Linie, ➜ Săgeată, ▭ Dreptunghi, ▢ Rotunjit, ◯ Cerc, △ Triunghi, ★ Stea sau ♥ Inimă, apoi <b>tragi cu mouse-ul pe pânză</b>. Ține <b>Shift</b> pentru pătrate/cercuri perfecte și linii drepte. La <i>Umplere formă</i> alegi Contur, Plină sau Plină + contur.`,b:[B('★ Star tool','★ Unealta stea',()=>{setTool('star');V.dshape='fill';sync();setTab('draw',true)}),B('♥ Heart tool','♥ Unealta inimă',()=>{setTool('heart');V.dshape='fill';sync();setTab('draw',true)})]},
+ {k:['draw','paint','brush','pen','pencil','sketch','desen','desenez','deseneaza','pensul','picta','pictez','creion','pix','marker'],en:`Open the <b>✏️ Draw</b> tab (key D) and choose a brush: ✒️ Pen, 🖍 Marker, 💡 Neon, 🌈 Rainbow, 💨 Spray, 🖋 Calligraphy or 🧽 Eraser. Set <b>Color</b>, <b>Size</b> ([ ]) and <b>Opacity</b>. Turn on <i>Gradient paint</i> to paint with two colors at once.`,ro:`Deschide fila <b>✏️ Desen</b> (tasta D) și alege o pensulă: ✒️ Pix, 🖍 Marker, 💡 Neon, 🌈 Curcubeu, 💨 Spray, 🖋 Caligrafie sau 🧽 Gumă. Setezi <b>Culoarea</b>, <b>Mărimea</b> ([ ]) și <b>Opacitatea</b>. Activează <i>Pictează cu gradient</i> ca să pictezi cu două culori deodată.`,b:[B('✏️ Start drawing','✏️ Începe să desenezi',()=>{if(!rgb)blank('1:1');setTool('pen');setTab('draw',true)})]},
+ {k:['symmetry','mirror','mandala','kaleido','pattern','simetri','oglind','model'],en:`In the <b>✏️ Draw</b> tab set <b>Symmetry</b>: Mirror ↔, Mirror ↕, Quad, Mandala 6 or Kaleido 8. Every stroke is copied around the center — scribble anything and it turns into a pattern.`,ro:`În fila <b>✏️ Desen</b> setează <b>Simetria</b>: Oglindă ↔, Oglindă ↕, 4 părți, Mandala 6 sau Kaleido 8. Fiecare linie se copiază în jurul centrului — mâzgălești orice și devine un model.`,b:[B('🌀 Try Kaleido 8','🌀 Încearcă Kaleido 8',()=>{if(!rgb)blank('1:1');V.dsym='k8';setTool('neon');sync();setTab('draw',true)})]},
+ {k:['gradient','gradients','degrade','background color','culoare fundal','culoarea fundalului','fundal','background','mesh','aurora','conic','radial'],en:`Open the <b>🌈 Colors</b> tab: tap a preset (Sunset, Ocean, Aurora…), or pick Color 1, Color 2 (and a 3rd), the type (Linear, Radial, Conic, Aurora mesh), the angle and some Grain. Or just tell me: <i>background gradient purple and pink</i>.`,ro:`Deschide fila <b>🌈 Culori</b>: apasă un preset (Sunset, Ocean, Aurora…), sau alege Culoare 1, Culoare 2 (și a 3-a), tipul (Liniar, Radial, Conic, Aurora mesh), unghiul și puțină Granulație. Sau spune-mi direct: <i>fundal gradient mov și roz</i>.`,b:[B('🎲 Random gradient','🎲 Gradient aleator',()=>ACT.rgrad()),B('🌈 Go to Colors','🌈 Mergi la Culori',()=>setTab('color'))]},
+ {k:['overlay','tint','color grade','grading','nuanta','suprapun','filtru colorat','cinematic'],en:`<b>Gradient overlay</b> (in the 🌈 Colors tab) tints the whole picture. Turn it on, pick 2 colors, a <b>Blend</b> mode and the <b>Strength</b>. Or tell me <i>cinematic</i>.`,ro:`<b>Filtrul gradient (overlay)</b> din fila 🌈 Culori colorează toată poza. Îl activezi, alegi 2 culori, un mod de <b>Amestec</b> și <b>Intensitatea</b>. Sau spune-mi <i>cinematic</i>.`},
+ {k:['glow light','light','lumina','spotlight','gradient tool','gradient fill','lights'],en:`In the <b>✏️ Draw</b> tab under <i>Light & color</i>: <b>✺ Glow light</b> — press where the light should be and drag outwards; <b>▤ Gradient fill</b> — drag a line to fill the drawing layer with a gradient.`,ro:`În fila <b>✏️ Desen</b>, la <i>Lumină & culoare</i>: <b>✺ Lumină glow</b> — apeși unde vrei lumina și tragi în afară; <b>▤ Umplere gradient</b> — tragi o linie și se umple stratul de desen cu un gradient.`},
+ {k:['text','write','font','title','caption','letters','scriu','scris','titlu','litere','scrie'],en:`Open the <b>🔤 Text</b> tab, type, choose a font, size, color and outline, then drag on the image to place it. <b>📌 Stamp</b> keeps it so you can write another one. Or tell me: <i>write "Hello" at the top in yellow</i>.`,ro:`Deschide fila <b>🔤 Text</b>, scrie, alege fontul, mărimea, culoarea și conturul, apoi trage pe imagine ca să-l poziționezi. <b>📌 Fixează</b> îl păstrează ca să poți scrie altul. Sau spune-mi: <i>scrie "Salut" sus cu galben</i>.`,b:[B('🔤 Go to Text','🔤 Mergi la Text',()=>{setTab('txt');setTimeout(()=>$('[data-k=txt]').focus(),300)})]},
+ {k:['sticker','stickers','emoji','emojis','abtibild','abtibilduri','stickere'],en:`Open the <b>🌟 Stickers</b> tab and tap an emoji, then drag it on the image. Or tell me <i>add 🔥 ✨</i> or <i>add hearts and stars</i>.`,ro:`Deschide fila <b>🌟 Stickere</b> și apasă un emoji, apoi trage-l pe imagine. Sau spune-mi <i>adaugă 🔥 ✨</i> sau <i>pune inimioare și stele</i>.`,b:[B('🌟 Go to Stickers','🌟 Mergi la Stickere',()=>setTab('stk'))]},
+ {k:['outline','border','stroke','contur','margine','chenar'],en:`<b>Outline & shadow</b> is in the <b>✨ Effects</b> tab: width, color, glow and double outline. Remove the background first so it follows the subject. Or tell me <i>thick white outline</i>.`,ro:`<b>Contur & umbră</b> e în fila <b>✨ Efecte</b>: grosime, culoare, strălucire și contur dublu. Scoate fundalul mai întâi ca să urmeze forma subiectului. Sau spune-mi <i>contur alb gros</i>.`,b:[B('✨ Go to Effects','✨ Mergi la Efecte',()=>goSec('ol'))]},
+ {k:['shadow','umbra','umbre','drop shadow'],en:`In <b>✨ Effects → Outline & shadow</b> turn on <b>Shadow</b> and set color, opacity, blur and offset. Or tell me <i>purple shadow</i>.`,ro:`În <b>✨ Efecte → Contur & umbră</b> activează <b>Umbra</b> și setezi culoarea, opacitatea, blur-ul și deplasarea. Sau spune-mi <i>umbră mov</i>.`},
+ {k:['filter','filters','black and white','sepia','duotone','vintage','brightness','contrast','saturation','filtru','filtre','alb negru','luminozitate','saturatie','vignette','vigneta'],en:`Filters are in the <b>✨ Effects</b> tab: B&W, Noir, Sepia, Vintage, Cyber, Duotone and more, plus Brightness, Contrast, Saturation, Temperature and Vignette. Or tell me <i>vintage and more contrast</i>.`,ro:`Filtrele sunt în fila <b>✨ Efecte</b>: Alb-negru, Noir, Sepia, Vintage, Cyber, Duotone și altele, plus Luminozitate, Contrast, Saturație, Temperatură și Vignetă. Sau spune-mi <i>vintage și mai mult contrast</i>.`,b:[B('✨ Go to Effects','✨ Mergi la Efecte',()=>goSec('flt'))]},
+ {k:['size','format','resolution','instagram','tiktok','youtube','thumbnail','story','reels','dimensiune','marime','rezolutie','aspect','crop'],en:`The <b>📐 Size</b> tab: Square (Instagram), 4:5, 3:4, Story 9:16 (TikTok, Reels), Wide 16:9 (YouTube). In Export choose 2× or 3× for a sharper file. Or tell me <i>story format</i>.`,ro:`Fila <b>📐 Mărime</b>: Pătrat (Instagram), 4:5, 3:4, Story 9:16 (TikTok, Reels), Lat 16:9 (YouTube). La Salvează alege 2× sau 3× pentru un fișier mai clar. Sau spune-mi <i>format story</i>.`,b:[B('📐 Go to Size','📐 Mergi la Mărime',()=>setTab('fmt'))]},
+ {k:['move','zoom','position','center','mut','muta','pozitie','centr'],en:`Use <b>✥ Move</b> (V) and drag to reposition the subject. Scroll over the canvas to zoom. Or tell me <i>make the subject bigger</i> / <i>center it</i>.`,ro:`Folosește <b>✥ Mută</b> (V) și trage ca să muți subiectul. Dă scroll pe pânză pentru zoom. Sau spune-mi <i>mărește subiectul</i> / <i>centrează-l</i>.`},
+ {k:['export','save','download','png','jpg','jpeg','webp','share','copy','salvez','salveaza','descarc','descarca','trimit','copiez'],en:`Press <b>⬇ Export</b> (or Ctrl+S). Choose PNG / JPG / WEBP, size 1×–3×, with background or transparent, then Download, Copy or Share.`,ro:`Apasă <b>⬇ Salvează</b> (sau Ctrl+S). Alegi PNG / JPG / WEBP, mărime 1×–3×, cu fundal sau transparent, apoi Descarcă, Copiază sau Trimite.`,b:[B('⬇ Open export','⬇ Deschide salvarea',()=>openExp())]},
+ {k:['undo','redo','mistake','wrong','back','greseala','gresit','anulez','anuleaza','inapoi','refac'],en:`<b>Ctrl+Z</b> undoes, <b>Ctrl+Y</b> redoes. After I change something, you can also press <b>↶ Revert this</b> under my message.`,ro:`<b>Ctrl+Z</b> anulează, <b>Ctrl+Y</b> reface. După ce schimb ceva, poți apăsa și <b>↶ Anulează asta</b> sub mesajul meu.`},
+ {k:['shortcut','shortcuts','keyboard','keys','hotkey','scurtatur','taste','tastatura'],en:`Shortcuts: <b>W</b> wand · <b>E</b> erase · <b>R</b> restore · <b>D</b> draw · <b>I</b> eyedropper · <b>V</b> move · <b>T</b> text · <b>S</b> sticker · <b>[ ]</b> size · <b>Ctrl+Z</b> undo · <b>Ctrl+Y</b> redo · <b>Ctrl+S</b> export · <b>Ctrl+V</b> paste photo.`,ro:`Scurtături: <b>W</b> baghetă · <b>E</b> șterge · <b>R</b> readu · <b>D</b> desen · <b>I</b> pipetă · <b>V</b> mută · <b>T</b> text · <b>S</b> sticker · <b>[ ]</b> mărime · <b>Ctrl+Z</b> anulează · <b>Ctrl+Y</b> reface · <b>Ctrl+S</b> salvează · <b>Ctrl+V</b> lipește poza.`},
+ {k:['eyedropper','pick color','color picker','pipeta','iau culoarea'],en:`Press <b>I</b> or pick <b>💧 Eyedropper</b> in the ✏️ Draw tab, then click on the image — that color becomes your brush color.`,ro:`Apasă <b>I</b> sau alege <b>💧 Pipetă</b> din fila ✏️ Desen, apoi dă click pe imagine — culoarea aceea devine culoarea pensulei.`},
+ {k:['language','limba','romana','english','engleza','romaneste'],en:`Press <b>🌐</b> at the top to switch the whole app between Română and English.`,ro:`Apasă <b>🌐</b> sus ca să schimbi toată aplicația între Română și English.`,b:[B('🌐 Switch','🌐 Schimbă',()=>$('#langB').click())]},
+ {k:['dark','theme','tema','intunecat','noapte'],en:`Click <b>🌓</b> at the top to switch between light and dark mode.`,ro:`Apasă <b>🌓</b> sus ca să schimbi între modul luminos și cel întunecat.`},
+ {k:['preset','presets','style','styles','stil','stiluri'],en:`<b>Style presets</b> (✨ Effects tab) change many settings in one click: Sticker, Neon, Pop art, Clean, Retro, Dreamy and Cyber. Tell me e.g. <i>neon</i>.`,ro:`<b>Stilurile gata făcute</b> (fila ✨ Efecte) schimbă multe setări dintr-un click: Sticker, Neon, Pop art, Clean, Retro, Dreamy și Cyber. Spune-mi de ex. <i>neon</i>.`},
+ {k:['where','unde','gasesc','find','sections','sectiuni','tabs','file','meniu','menu'],en:`Everything is grouped in the <b>tabs at the top</b>: ✂️ Cut out · ✏️ Draw · 🌈 Colors · ✨ Effects · 🔤 Text · 🌟 Stickers · 📐 Size · ☰ All. Click a tab and its tools appear on the right.`,ro:`Totul e grupat în <b>filele de sus</b>: ✂️ Decupare · ✏️ Desen · 🌈 Culori · ✨ Efecte · 🔤 Text · 🌟 Stickere · 📐 Mărime · ☰ Toate. Apeși o filă și uneltele ei apar în dreapta.`},
+ {k:['privacy','private','server','internet','offline','safe','sigur','date','online'],en:`Everything happens inside your browser. Your photos are never uploaded, and I also run fully offline inside this file.`,ro:`Totul se întâmplă în browserul tău. Pozele nu sunt urcate nicăieri, iar eu funcționez complet offline, în acest fișier.`},
+ {k:['thanks','thank','thx','multumesc','mersi','merci','super','perfect','tare','fain','misto'],en:`You're welcome! 💜 Tell me what to change next.`,ro:`Cu plăcere! 💜 Spune-mi ce mai schimbăm.`},
+ {k:['who are you','what are you','are you real','chatgpt','claude','cine esti','ce esti','esti real','robot'],en:`I'm <b>Thogs AI</b>, a helper built into this file. I run offline, understand English and Romanian and can edit your image, but I'm not a general chatbot like ChatGPT — I only know this studio.`,ro:`Sunt <b>Thogs AI</b>, un asistent construit în acest fișier. Merg offline, înțeleg română și engleză și pot edita imaginea, dar nu sunt un chatbot general ca ChatGPT — știu doar acest studio.`},
+ {k:['phone','mobile','iphone','android','tablet','telefon','tableta','mobil'],en:`It works on phones too: tap the big area to pick a photo, draw with your finger, and in Export use <b>Share</b> or long-press the picture to save it.`,ro:`Merge și pe telefon: apasă pe zona mare ca să alegi o poză, desenezi cu degetul, iar la Salvează folosești <b>Trimite</b> sau ții apăsat pe imagine ca s-o salvezi.`}
+];
+const IDEAS=[
+ {en:`🌃 <b>Neon night portrait</b> — remove the background, apply <i>Neon</i>, then draw neon lines with <i>Mirror ↔</i>.`,ro:`🌃 <b>Portret neon de noapte</b> — scoate fundalul, aplică <i>Neon</i>, apoi desenează linii neon cu <i>Oglindă ↔</i>.`,f:()=>{preset('Neon');setTool('neon');V.dsym='x';V.dcol='#ff2fd1';sync();setTab('draw',true)}},
+ {en:`🌅 <b>Sunset quote card</b> — Story canvas, Sunset gradient with grain, big elegant gradient text.`,ro:`🌅 <b>Card cu citat la apus</b> — pânză Story, gradient Sunset cu granulație, text mare elegant în gradient.`,f:()=>{ensure('9:16');applyGP('Sunset');Object.assign(V,{gnoise:14,txt:'Golden hour',font:'Georgia,serif',tsz:13,tx:.5,ty:.45,tcol:'#ffffff',tcol2:'#ffe3b0',tgrad:true,tsw:0});sync();R();setTab('txt',true)}},
+ {en:`🌀 <b>Mandala art</b> — blank square, Aurora mesh, Kaleido 8 and the Neon brush. Scribble near the center!`,ro:`🌀 <b>Mandala</b> — pânză pătrată, Aurora mesh, Kaleido 8 și pensula Neon. Mâzgălește lângă centru!`,f:()=>{ensure('1:1');applyGP('Aurora');V.gtype='aurora';V.dsym='k8';V.dcol='#00e5ff';V.dsz=6;setTool('neon');sync();R();setTab('draw',true)}},
+ {en:`📢 <b>YouTube thumbnail</b> — Wide 16:9, Pop art style, huge text and a red arrow.`,ro:`📢 <b>Thumbnail YouTube</b> — format Lat 16:9, stil Pop art, text uriaș și o săgeată roșie.`,f:()=>{if(rgb)preset('Pop art');ensure('16:9');Object.assign(V,{txt:'NO WAY!',font:'Impact,Haettenschweiler,sans-serif',tsz:11,tx:.72,ty:.2,tcol:'#ffd23f',tstk:'#111111',tsw:12,dcol:'#ff3b3b',dsz:14});setTool('arrow');sync();R();setTab('draw',true)}},
+ {en:`💌 <b>Cute sticker</b> — remove the background, thick white outline, Candy gradient and ❤️ ✨.`,ro:`💌 <b>Sticker drăguț</b> — scoate fundalul, contur alb gros, gradient Candy și ❤️ ✨.`,f:()=>{preset('Sticker');applyGP('Candy');V.olw=18;stk.push({e:'❤️',x:.2,y:.2,z:V.ssz},{e:'✨',x:.8,y:.2,z:V.ssz});sync();R()}},
+ {en:`📼 <b>Retro poster</b> — Retro style, typewriter text at the bottom, strong vignette.`,ro:`📼 <b>Poster retro</b> — stil Retro, text tip mașină de scris jos, vignetă puternică.`,f:()=>{preset('Retro');Object.assign(V,{txt:'SUMMER 1985',font:'Courier New,monospace',tsz:9,ty:.88,tcol:'#3b2a10',tstk:'#fff6dc',tsw:6,vig:60});sync();R()}},
+ {en:`🌌 <b>Dreamy color grade</b> — aurora gradient, soft glow and a lavender overlay.`,ro:`🌌 <b>Look visător</b> — gradient aurora, strălucire moale și filtru lavandă.`,f:()=>preset('Dreamy')},
+ {en:`🪐 <b>Space wallpaper</b> — Story canvas, Midnight gradient, white Spray for stars and a few Glow lights.`,ro:`🪐 <b>Wallpaper spațial</b> — pânză Story, gradient Midnight, Spray alb pentru stele și câteva lumini Glow.`,f:()=>{ensure('9:16');applyGP('Midnight');V.gtype='radial';V.dcol='#ffffff';V.dsz=10;setTool('spray');sync();R();setTab('draw',true)}}
+];
+let lastIdea=-1;
+function idea(ro){let i;do i=Math.floor(Math.random()*IDEAS.length);while(i===lastIdea);lastIdea=i;const d=IDEAS[i];
+ return{t:(ro?'Încearcă asta:<br>':'Try this:<br>')+d[ro?'ro':'en'],b:[[ro?'✨ Pregătește-l':'✨ Set it up',d.f],[ro?'🎲 Altă idee':'🎲 Another idea',()=>ask(ro?'altă idee':'another idea')]]}}
+function kbFind(n,toks){let best=null,bs=0;KB.forEach(e=>{let s=0;e.k.forEach(k=>{if(k.includes(' ')){if(n.includes(k)||k.split(' ').every(w=>toks.some(t=>t===w||(w.length>3&&t.startsWith(w)))))s+=3}else if(toks.some(t=>t===k||(k.length>3&&t.startsWith(k))))s+=k.length>4?2:1.5});if(s>bs){bs=s;best=e}});return bs>=1.5?best:null}
+function answer(q){const n0=norm(q).replace(/[?!.,;:]+/g,' ').replace(/\s+/g,' ').trim(),toks=n0.split(/[^a-z0-9]+/).filter(Boolean).map(fixTok),n=toks.join(' ');
+ if(/[ăâîșşțţ]/i.test(q)||RO_W.test(n0))lang='ro';else if(EN_W.test(n0))lang='en';const ro=lang==='ro';
+ const isHow=/^(how|cum|what|ce |care|de ce|why|which|where|unde|in ce fel)/.test(n0)||/\b(how do i|how can i|how to|cum pot|cum fac|cum se)\b/.test(n0);
+ if(/\b(idea|ideas|inspir\w*|idee|idei)\b/.test(n)||n0.includes('what should i')||n0.includes('ce sa fac'))return idea(ro);
+ const P=parse(q);
+ if(P.acts.length&&!isHow)return runActs(P.acts,ro);
+ const e=kbFind(n,toks);
+ if(P.acts.length){const r=e?{t:ro?e.ro:e.en,b:(e.b||[]).map(([a,b,f])=>[ro?b:a,f])}:{t:ro?'Pot să fac asta pentru tine 🙂':'I can do that for you 🙂',b:[]};r.b.unshift([ro?'✨ Fă-o pentru mine':'✨ Do it for me',()=>{const x=runActs(parse(q).acts,ro);addMsg('b',x.t,x.b)}]);return r}
+ if(e)return{t:ro?e.ro:e.en,b:(e.b||[]).map(([a,b,f])=>[ro?b:a,f])};
+ return{t:ro?`Hmm, nu am înțeles exact 🤔 Încearcă să-mi spui ce să schimb, de ex. <i>fundal albastru</i>, <i>fă-o alb-negru</i>, <i>contur roșu</i>, <i>scrie "Salut"</i> — sau întreabă <i>cum</i> se face ceva.`:`Hmm, I didn't quite get that 🤔 Try telling me what to change, e.g. <i>blue background</i>, <i>make it black and white</i>, <i>red outline</i>, <i>write "Hello"</i> — or ask <i>how</i> to do something.`,b:[[ro?'❓ Ce poți face?':'❓ What can you do?',()=>ask(ro?'ce poți face?':'what can you do?')],[ro?'💡 Dă-mi o idee':'💡 Give me an idea',()=>ask(ro?'dă-mi o idee':'give me an idea')]]}}
+const SUG={en:['What can you do?','Remove the background','Make it black and white and brighter','Background gradient purple and pink','Red outline and blue glow','Write "Hello" at the top in yellow','Add 🔥 ✨ stickers','Make it cinematic','Give me an idea','Where is everything?'],
+ ro:['Ce poți face?','Scoate fundalul','Fă-o alb-negru și mai luminoasă','Fundal gradient mov și roz','Contur roșu și strălucire albastră','Scrie "Salut" sus cu galben','Adaugă stickere 🔥 ✨','Fă-o cinematic','Dă-mi o idee','Unde găsesc lucrurile?']};
+function sugg(){const s=$('#sugg');s.innerHTML='';SUG[lang].forEach(t=>{const b=mk('button','',esc(t));b.onclick=()=>ask(t);s.appendChild(b)});$('#aiq').placeholder=lang==='ro'?'Ex: fă fundalul albastru și pune contur alb':'E.g. make the background blue with a white outline'}
+function addMsg(w,content,btns){const m=mk('div','m '+w);if(w==='u')m.textContent=content;else m.innerHTML=content;
+ if(btns&&btns.length){const r=mk('div','chips');btns.forEach(([l,f])=>{const b=mk('button','',l);b.onclick=()=>{try{f()}catch(err){toast(':(')}};r.appendChild(b)});m.appendChild(r)}
+ const box=$('#msgs');box.appendChild(m);box.scrollTop=box.scrollHeight;return m}
+function ask(q){q=(q||'').trim();if(!q)return;addMsg('u',q);const t=addMsg('b','<span class="typing"><i></i><i></i><i></i></span>');
+ let a;try{a=answer(q)}catch(err){console.error(err);a={t:'Oops 😅'}}
+ setTimeout(()=>{t.remove();addMsg('b',a.t,a.b);sugg()},300+Math.min(500,a.t.length*1.5))}
+function openAI(){const p=$('#ai');p.classList.toggle('on');if(p.classList.contains('on')){if(!aiStarted){aiStarted=true;const ro=lang==='ro';addMsg('b',ro?`Salut! Sunt <b>Thogs AI</b> 🤖<br>Spune-mi ce să fac cu imaginea ta — de exemplu <i>scoate fundalul și pune un gradient sunset</i> — sau întreabă-mă cum se face ceva.`:`Hi! I'm <b>Thogs AI</b> 🤖<br>Tell me what to do with your image — e.g. <i>remove the background and add a sunset gradient</i> — or ask me how to do something.`);sugg()}setTimeout(()=>$('#aiq').focus(),50)}}
+$('#aiBtn').onclick=openAI;$('#aiX').onclick=()=>$('#ai').classList.remove('on');
+$('#aif').onsubmit=e=>{e.preventDefault();const i=$('#aiq');ask(i.value);i.value=''};
+$('#aiq').addEventListener('keydown',e=>{if(e.key==='Escape')$('#ai').classList.remove('on')});
+buildUI();setM();
+</script></body></html>
